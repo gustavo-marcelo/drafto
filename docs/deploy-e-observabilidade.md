@@ -27,6 +27,9 @@ fazem a aplicação falhar **cedo**, no primeiro acesso a `getEnv()`.
 | `NEXT_PUBLIC_SENTRY_ENVIRONMENT`        | Ambiente do Sentry no cliente.                               | `NODE_ENV`                    |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | Amostragem de tracing no cliente (0..1).                     | `0`                           |
 | `LOG_LEVEL`                             | Nível do logger pino: `fatal`…`trace`/`silent`.              | `debug` (dev) / `info` (prod) |
+| `ADMIN_EMAIL`                           | E-mail do usuário inicial criado pelo seed.                  | `demo@destrava.ai`            |
+| `ADMIN_PASSWORD`                        | Senha do usuário inicial (mín. 8 caracteres).                | `proposta123`                 |
+| `ADMIN_NAME`                            | Nome do usuário inicial.                                     | `Usuário Demo`                |
 
 > **Segurança:** nunca comite o `.env` real (já ignorado no `.gitignore`). Em
 > produção, injete os segredos pelo provedor (Docker secrets, Vercel env, etc.).
@@ -44,10 +47,64 @@ openssl rand -base64 32   # SESSION_SECRET
 ```bash
 npx prisma migrate deploy   # aplica migrations pendentes (produção)
 npx prisma generate         # gera o client
+npm run db:seed             # usuário inicial + catálogo + proposta demo
 npm run db:expire           # expira propostas vencidas (agendar via cron)
 ```
 
-## 3. Logs estruturados
+## 3. Docker (app + banco)
+
+O projeto sobe completo (aplicação + PostgreSQL) com Docker Compose. O build usa
+`output: "standalone"` do Next (imagem enxuta) e o container da app roda o
+Chromium embarcado (Puppeteer) para gerar PDFs.
+
+### Arquivos
+
+| Arquivo               | Papel                                                                 |
+| --------------------- | --------------------------------------------------------------------- |
+| `Dockerfile`          | Multi-stage: `deps` → `builder` → `chrome` → `runner` (+ `migrate`).  |
+| `docker-compose.yml`  | Serviços `db`, `migrate` (roda migrations e encerra), `app` e `seed`. |
+| `.env.docker.example` | Modelo de variáveis do Compose (copie para `.env.docker`).            |
+| `.dockerignore`       | Exclui `node_modules`, `.next`, testes, segredos e docs do contexto.  |
+
+### Subindo
+
+```bash
+cp .env.docker.example .env.docker   # ajuste SESSION_SECRET e demais valores
+docker compose --env-file .env.docker up --build
+```
+
+- `db` (Postgres 16) sobe primeiro e fica `healthy` (healthcheck `pg_isready`).
+- `migrate` aplica `prisma migrate deploy` e encerra; a `app` só inicia depois
+  (`service_completed_successfully`).
+- Aplicação em `http://localhost:3000`; Postgres publicado em `${POSTGRES_PORT}`.
+
+### Seed (opcional)
+
+```bash
+docker compose --env-file .env.docker --profile seed run --rm seed
+```
+
+Cria o usuário inicial (a partir de `ADMIN_EMAIL`/`ADMIN_PASSWORD` do
+`.env.docker`), o catálogo de recursos e a proposta demo. Rode apenas quando
+quiser popular o banco.
+
+### Operação
+
+```bash
+docker compose --env-file .env.docker logs -f app     # logs da aplicação
+docker compose --env-file .env.docker ps              # status dos serviços
+docker compose --env-file .env.docker down            # para tudo (mantém volume)
+docker compose --env-file .env.docker down -v         # para tudo e apaga o banco
+```
+
+> **Portas:** para evitar conflito com um Postgres local, defina `POSTGRES_PORT`
+> (ex.: `55432`) no `.env.docker`. O `DATABASE_URL` interno sempre aponta para o
+> serviço `db:5432`.
+
+> **Segredos:** o `.env.docker` real está no `.gitignore`. Em produção, prefira
+> Docker secrets ou o gerenciador de segredos do provedor.
+
+## 4. Logs estruturados
 
 O servidor usa [pino](https://getpino.io) em `src/lib/logger.ts`:
 
@@ -68,7 +125,7 @@ logger.error({ err }, "Falha ao gerar PDF");
 Para erros em server actions/services, prefira `captureServerError` (ver abaixo),
 que loga **e** encaminha ao Sentry.
 
-## 4. Sentry (monitoramento de erros)
+## 5. Sentry (monitoramento de erros)
 
 A integração é **opcional e ativada por DSN**: sem `SENTRY_DSN` (server) e/ou
 `NEXT_PUBLIC_SENTRY_DSN` (cliente), nada é enviado e as chamadas são no-op.
@@ -100,7 +157,7 @@ SENTRY_ENVIRONMENT="production"
 SENTRY_TRACES_SAMPLE_RATE="0.1"
 ```
 
-## 5. Healthcheck manual
+## 6. Healthcheck manual
 
 ```bash
 curl -sI http://localhost:3000/            # 200

@@ -1,0 +1,36 @@
+# Dependências e artefatos de build
+node_modules
+.next
+out
+dist
+coverage
+
+# Testes e relatórios
+test-results
+playwright-report
+playwright/.cache
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Versionamento e editores
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Docker e documentação
+Dockerfile*
+docker-compose*.yml
+docker
+docs
+README.md
+*.md
+
+# Temporários
+*.log
+*.tmp
+.DS_Store

@@ -13,31 +13,75 @@ Gerador de propostas comerciais — criação, edição, gestão e exportação 
 ## Requisitos
 
 - Node.js 22+
-- PostgreSQL rodando localmente
+- PostgreSQL rodando localmente (ou Docker — veja abaixo)
 
-## Setup
+## Setup (local)
 
 ```bash
 npm install
 cp .env.example .env   # ajuste o DATABASE_URL se necessário
 npm run db:migrate     # aplica as migrações
+npm run db:seed        # cria o usuário inicial + dados de exemplo
 npm run dev
+```
+
+Acesse [http://localhost:3000](http://localhost:3000). O usuário inicial padrão é
+`demo@destrava.ai` / `proposta123` (configurável via `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
+
+## Docker (app + banco)
+
+Sobe a aplicação **e** o PostgreSQL com um comando. O build usa o output
+`standalone` do Next e o container da app já inclui o Chromium (Puppeteer) para
+gerar os PDFs.
+
+```bash
+cp .env.docker.example .env.docker   # ajuste SESSION_SECRET (openssl rand -base64 32)
+docker compose --env-file .env.docker up --build
 ```
 
 Acesse [http://localhost:3000](http://localhost:3000).
 
+- `db` — PostgreSQL 16 com healthcheck e volume persistente (`db-data`).
+- `migrate` — aplica as migrações (`prisma migrate deploy`) e encerra; a app só
+  inicia depois.
+- `app` — Next.js em modo produção, publicado em `${APP_PORT}`.
+
+Para popular o banco (usuário inicial + catálogo + proposta demo):
+
+```bash
+docker compose --env-file .env.docker --profile seed run --rm seed
+```
+
+Comandos úteis:
+
+```bash
+docker compose --env-file .env.docker logs -f app    # logs da aplicação
+docker compose --env-file .env.docker ps             # status dos serviços
+docker compose --env-file .env.docker down           # para tudo (mantém o banco)
+docker compose --env-file .env.docker down -v        # para tudo e apaga o banco
+```
+
+> Se já houver um PostgreSQL local na porta 5432, defina `POSTGRES_PORT` (ex.:
+> `55432`) no `.env.docker`. Detalhes em
+> [docs/deploy-e-observabilidade.md](./docs/deploy-e-observabilidade.md).
+
 ## Scripts
 
-| Script                | Descrição                    |
-| --------------------- | ---------------------------- |
-| `npm run dev`         | Servidor de desenvolvimento  |
-| `npm run build`       | Build de produção            |
-| `npm run lint`        | ESLint                       |
-| `npm run typecheck`   | Verificação de tipos (tsc)   |
-| `npm run format`      | Formata com Prettier         |
-| `npm run db:migrate`  | Cria/aplica migrações Prisma |
-| `npm run db:studio`   | Prisma Studio                |
-| `npm run db:generate` | Regenera o Prisma Client     |
+| Script                | Descrição                           |
+| --------------------- | ----------------------------------- |
+| `npm run dev`         | Servidor de desenvolvimento         |
+| `npm run build`       | Build de produção                   |
+| `npm run start`       | Inicia o build de produção          |
+| `npm run lint`        | ESLint                              |
+| `npm run typecheck`   | Verificação de tipos (tsc)          |
+| `npm run test`        | Testes unitários (Vitest)           |
+| `npm run test:e2e`    | Testes E2E (Playwright)             |
+| `npm run format`      | Formata com Prettier                |
+| `npm run db:migrate`  | Cria/aplica migrações Prisma        |
+| `npm run db:seed`     | Popula o banco com dados de exemplo |
+| `npm run db:expire`   | Expira propostas vencidas           |
+| `npm run db:studio`   | Prisma Studio                       |
+| `npm run db:generate` | Regenera o Prisma Client            |
 
 ## Estrutura
 
@@ -57,6 +101,7 @@ prisma/           # schema e migrações
 
 - [Especificação](./docs/especificacao.md)
 - [Plano de desenvolvimento](./docs/plano-de-desenvolvimento.md)
+- [Deploy e observabilidade](./docs/deploy-e-observabilidade.md)
 - [Boas práticas Next.js](./docs/boas-praticas-nextjs.md)
 - [Padrão de cores](./docs/padrao-de-cores.md)
 

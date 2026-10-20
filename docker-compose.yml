@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-proposta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-proposta}
+      POSTGRES_DB: ${POSTGRES_DB:-propostadb}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-proposta} -d ${POSTGRES_DB:-propostadb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-proposta}:${POSTGRES_PASSWORD:-proposta}@db:5432/${POSTGRES_DB:-propostadb}?schema=public
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-proposta}:${POSTGRES_PASSWORD:-proposta}@db:5432/${POSTGRES_DB:-propostadb}?schema=public
+      SESSION_SECRET: ${SESSION_SECRET:?defina SESSION_SECRET no .env.docker}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+
+  # Roda o seed (usuário inicial + catálogo + proposta demo). Opcional:
+  #   docker compose --profile seed run --rm seed
+  seed:
+    build:
+      context: .
+      target: seed
+    profiles: ["seed"]
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-proposta}:${POSTGRES_PASSWORD:-proposta}@db:5432/${POSTGRES_DB:-propostadb}?schema=public
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+
+volumes:
+  db-data:
