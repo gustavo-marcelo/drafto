@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent-50: #fff9e8;
+  --color-accent-100: #feeed4;
+  --color-accent-200: #f2ddb8;
+  --color-accent-300: #e5ca9b;
+  --color-accent-400: #d6b781;
+  --color-accent-500: #cfad72;
+  --color-accent-600: #c7a66b;
+  --color-accent-700: #aa8c55;
+  --color-accent-800: #907441;
+  --color-accent-900: #785f2f;
+  --color-accent-950: #60491c;
+
+  --color-primary-50: #deefec;
+  --color-primary-100: #c8dfdb;
+  --color-primary-200: #a5c2bd;
+  --color-primary-300: #799c96;
+  --color-primary-400: #547a74;
+  --color-primary-500: #335b55;
+  --color-primary-600: #123b36;
+  --color-primary-700: #002824;
+  --color-primary-800: #001a16;
+  --color-primary-900: #000e0b;
+  --color-primary-950: #000403;
+
+  --color-background: #ffffff;
+  --color-foreground: var(--color-primary-950);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --surface-base: var(--color-background);
+  --surface-subtle: var(--color-primary-50);
+  --surface-highlight: var(--color-accent-50);
+  --border-default: var(--color-primary-200);
+
+  --text-default: var(--color-primary-950);
+  --text-muted: var(--color-primary-700);
+
+  --button-primary-bg: var(--color-primary-600);
+  --button-primary-bg-hover: var(--color-primary-700);
+  --button-accent-bg: var(--color-accent-600);
+  --button-accent-bg-hover: var(--color-accent-700);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}

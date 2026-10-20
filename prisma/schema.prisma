@@ -1,0 +1,197 @@
+// Proposta.ai — Modelo de dados (Prisma)
+// Mantido em um único arquivo por decisão: o Prisma 6 não suporta schema
+// multiarquivo. Seções organizadas por domínio; ordem dos models não afeta
+// as relações (todas são nomeadas pelos campos).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ────────────────────────────────────────────────────────────
+// Enums
+// ────────────────────────────────────────────────────────────
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  EXPIRED
+  COMPLETED
+  CANCELLED
+}
+
+// ────────────────────────────────────────────────────────────
+// Identidade e acesso
+// ────────────────────────────────────────────────────────────
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  proposals    Proposal[]
+  textPresets  TextPreset[]
+}
+
+// ────────────────────────────────────────────────────────────
+// Catálogo e cadastros reutilizáveis
+// ────────────────────────────────────────────────────────────
+
+model Client {
+  id         String     @id @default(cuid())
+  name       String
+  address    String?
+  document   String?
+  contact    String?
+  phone      String?
+  email      String?
+  clientCode String?    @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  proposals  Proposal[]
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  title       String
+  description String?
+  position    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([position])
+}
+
+model Package {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  audience    String?
+  payload     Json?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  proposals   Proposal[]
+
+  @@index([name])
+}
+
+// ────────────────────────────────────────────────────────────
+// Proposta (entidade central + itens anexos)
+// ────────────────────────────────────────────────────────────
+
+model Proposal {
+  id          String         @id @default(cuid())
+  code        String?        @unique
+  shareId     String?        @unique
+  title       String
+  subtitle    String?
+  eventDate   DateTime?
+  location    String?
+  audience    String?
+  solution    String?
+  status      ProposalStatus @default(DRAFT)
+  validUntil  DateTime?
+  issuedAt    DateTime?
+  totalAmount Decimal?       @db.Decimal(12, 2)
+  payload     Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id])
+
+  modules   ProposalModule[]
+  equipment Equipment[]
+  payments  Payment[]
+  schedule  ProposalScheduleItem[]
+
+  @@index([status])
+  @@index([clientId])
+}
+
+model ProposalModule {
+  id          String   @id @default(cuid())
+  key         String
+  title       String
+  description String?
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+}
+
+model Equipment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  quantity    Int      @default(1)
+  specs       String?
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  dueDate    DateTime
+  amount     Decimal  @db.Decimal(12, 2)
+  proposalId String
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+}
+
+model ProposalScheduleItem {
+  id          String   @id @default(cuid())
+  date        String
+  title       String
+  description String?
+  position    Int      @default(0)
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+}
+
+// ────────────────────────────────────────────────────────────
+// Configurações globais e preferências do usuário
+// ────────────────────────────────────────────────────────────
+
+model Setting {
+  id              String   @id @default("singleton")
+  logo            String?
+  companyName     String?
+  tagline         String?
+  responsible     String?
+  responsibleRole String?
+  cnpj            String?
+  phone           String?
+  email           String?
+  updatedAt       DateTime @updatedAt
+}
+
+model TextPreset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, category])
+}
