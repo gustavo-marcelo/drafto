@@ -39,11 +39,9 @@ export function wizardToDocument(
       title: module.title,
       description: emptyToNull(module.description),
     })),
-    equipment: data.equipment.map((item) => ({
-      name: item.name,
+    infrastructure: data.infrastructure.map((item) => ({
+      title: item.title,
       description: emptyToNull(item.description),
-      quantity: item.quantity,
-      specs: emptyToNull(item.specs),
     })),
     payments: data.payments.map((payment) => ({
       dueDate: payment.dueDate,

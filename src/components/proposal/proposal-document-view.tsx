@@ -1,5 +1,5 @@
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { ProposalDocument } from "@/lib/proposal-document";
+import type { ProposalDocument, ProposalDocumentItem } from "@/lib/proposal-document";
 
 const BRAND_NAME = "Proposta.ai";
 
@@ -137,47 +137,33 @@ function ClientBlock({ document }: { document: ProposalDocument }) {
   );
 }
 
-function ModulesList({ document }: { document: ProposalDocument }) {
-  if (document.modules.length === 0) {
-    return <p className="doc-empty">Nenhum recurso selecionado.</p>;
+function ItemList({
+  items,
+  emptyMessage,
+}: {
+  items: ProposalDocumentItem[];
+  emptyMessage: string;
+}) {
+  if (items.length === 0) {
+    return <p className="doc-empty">{emptyMessage}</p>;
   }
   return (
     <ul className="doc-list">
-      {document.modules.map((module, index) => (
-        <li key={`${module.title}-${index}`}>
+      {items.map((item, index) => (
+        <li key={`${item.title}-${index}`}>
           <span className="doc-check">✓</span>
           <span>
-            <span className="doc-item-title">{module.title}</span>
-            {module.description && (
+            <span className="doc-item-title">{item.title}</span>
+            {item.description && (
               <>
                 <br />
-                <span className="doc-item-desc">{module.description}</span>
+                <span className="doc-item-desc">{item.description}</span>
               </>
             )}
           </span>
         </li>
       ))}
     </ul>
-  );
-}
-
-function EquipmentList({ document }: { document: ProposalDocument }) {
-  if (document.equipment.length === 0) {
-    return <p className="doc-empty">Nenhum equipamento informado.</p>;
-  }
-  return (
-    <div>
-      {document.equipment.map((item, index) => (
-        <div className="doc-equip-row" key={`${item.name}-${index}`}>
-          <div className="doc-equip-qty">{String(item.quantity).padStart(2, "0")}</div>
-          <div>
-            <div className="doc-item-title">{item.name}</div>
-            {item.description && <div className="doc-item-desc">{item.description}</div>}
-            {item.specs && <div className="doc-equip-specs">{item.specs}</div>}
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -303,22 +289,23 @@ export function ProposalDocumentView({
 
         <section className="doc-section">
           <h2 className="doc-section-title">Recursos do sistema de credenciamento</h2>
-          <ModulesList document={document} />
+          <ItemList items={document.modules} emptyMessage="Nenhum recurso selecionado." />
+        </section>
+
+        <section className="doc-section">
+          <h2 className="doc-section-title">Infraestrutura e operação</h2>
+          <ItemList
+            items={document.infrastructure}
+            emptyMessage="Nenhum item de infraestrutura informado."
+          />
         </section>
 
         {includeFooter && <Footer document={document} pageNumber={1} totalPages={totalPages} />}
       </article>
 
-      {/* Página 2 — Equipamentos e Requisitos */}
+      {/* Página 2 — Requisitos e Operação */}
       <article className="doc-page">
         <Header document={document} />
-
-        {document.equipment.length > 0 && (
-          <section className="doc-section">
-            <h2 className="doc-section-title">Autoatendimento e equipamentos</h2>
-            <EquipmentList document={document} />
-          </section>
-        )}
 
         {document.requirements?.trim() && (
           <section className="doc-section">

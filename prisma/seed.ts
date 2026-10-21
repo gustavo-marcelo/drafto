@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-import { DEFAULT_RESOURCES } from "../src/lib/catalog";
+import { DEFAULT_INFRASTRUCTURES, DEFAULT_RESOURCES } from "../src/lib/catalog";
 
 const prisma = new PrismaClient();
 
@@ -51,6 +51,23 @@ async function main() {
     });
   }
 
+  for (const [index, infrastructure] of DEFAULT_INFRASTRUCTURES.entries()) {
+    await prisma.infrastructure.upsert({
+      where: { key: infrastructure.key },
+      update: {
+        title: infrastructure.title,
+        description: infrastructure.description,
+        position: index,
+      },
+      create: {
+        key: infrastructure.key,
+        title: infrastructure.title,
+        description: infrastructure.description,
+        position: index,
+      },
+    });
+  }
+
   const client = await prisma.client.upsert({
     where: { id: "seed-client-1" },
     update: {},
@@ -78,9 +95,7 @@ async function main() {
       "identificacao-prioritaria",
       "controle-de-acesso",
     ],
-    equipamentos: [
-      { name: "Totem de autoatendimento", quantity: 5, specs: 'Tela 15,6", Ryzen 5, 16GB RAM' },
-    ],
+    infraestrutura: ["totens-de-autoatendimento", "estacoes-de-impressao"],
   };
 
   await prisma.package.upsert({
@@ -101,6 +116,7 @@ async function main() {
   });
 
   await prisma.proposalScheduleItem.deleteMany({ where: { proposalId: "seed-proposal-1" } });
+  await prisma.proposalModule.deleteMany({ where: { proposalId: "seed-proposal-1" } });
 
   await prisma.proposal.upsert({
     where: { id: "seed-proposal-1" },
@@ -121,16 +137,6 @@ async function main() {
       clientId: client.id,
       authorId: demo.id,
       packageId: "seed-package-1",
-      equipment: {
-        create: [
-          {
-            name: "Totem de autoatendimento",
-            description: "Interface Full HD com leitura de QR Code/CPF/nome.",
-            quantity: 5,
-            specs: 'Tela 15,6", Ryzen 5, 16GB RAM',
-          },
-        ],
-      },
       payments: {
         create: [
           { dueDate: new Date("2026-11-01T00:00:00Z"), amount: 12500 },
@@ -140,13 +146,46 @@ async function main() {
     },
   });
 
+  await prisma.proposalInfrastructure.deleteMany({ where: { proposalId: "seed-proposal-1" } });
+
+  for (const resource of DEFAULT_RESOURCES.filter((item) =>
+    packagePayload.recursos.includes(item.key),
+  )) {
+    await prisma.proposalModule.create({
+      data: {
+        proposalId: "seed-proposal-1",
+        key: resource.key,
+        title: resource.title,
+        description: resource.description,
+      },
+    });
+  }
+
+  await prisma.proposalInfrastructure.create({
+    data: {
+      proposalId: "seed-proposal-1",
+      key: "totens-de-autoatendimento",
+      title: "Totens de autoatendimento",
+      description: "Unidades self-service para emissão de credenciais no evento.",
+    },
+  });
+
+  await prisma.proposalInfrastructure.create({
+    data: {
+      proposalId: "seed-proposal-1",
+      key: "estacoes-de-impressao",
+      title: "Estações de impressão",
+      description: "Impressoras para crachás, etiquetas e materiais do participante.",
+    },
+  });
+
   await prisma.proposalScheduleItem.createMany({
     data: [
       {
         proposalId: "seed-proposal-1",
         date: "17/11/2026",
         title: "Montagem e preparação",
-        description: "Instalação, configuração e testes dos equipamentos e da operação.",
+        description: "Instalação, configuração e testes da infraestrutura e da operação.",
         position: 0,
       },
       {
@@ -160,7 +199,7 @@ async function main() {
         proposalId: "seed-proposal-1",
         date: "Após encerramento",
         title: "Desmontagem e consolidação",
-        description: "Retirada dos equipamentos e disponibilização da base consolidada.",
+        description: "Retirada da infraestrutura e disponibilização da base consolidada.",
         position: 2,
       },
     ],

@@ -5,7 +5,8 @@ import { useState, useTransition } from "react";
 
 import { savePackage } from "@/app/actions/packages";
 import { Field, inputClass } from "@/components/ui/field";
-import type { PackageData, PackageEquipment } from "@/lib/validations/package";
+import type { PackageData } from "@/lib/validations/package";
+import type { InfrastructureOption } from "@/services/infrastructures";
 import type { ResourceOption } from "@/services/resources";
 
 const EMPTY: PackageData = {
@@ -13,16 +14,22 @@ const EMPTY: PackageData = {
   description: "",
   audience: "",
   recursos: [],
-  equipamentos: [],
+  infraestrutura: [],
 };
 
 type PackageFormProps = {
   resources: ResourceOption[];
+  infrastructures: InfrastructureOption[];
   initialData?: Partial<PackageData>;
   packageId?: string;
 };
 
-export function PackageForm({ resources, initialData, packageId }: PackageFormProps) {
+export function PackageForm({
+  resources,
+  infrastructures,
+  initialData,
+  packageId,
+}: PackageFormProps) {
   const router = useRouter();
   const [data, setData] = useState<PackageData>({ ...EMPTY, ...initialData });
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -42,24 +49,12 @@ export function PackageForm({ resources, initialData, packageId }: PackageFormPr
     );
   }
 
-  function addEquipment() {
-    update("equipamentos", [
-      ...data.equipamentos,
-      { name: "", description: "", quantity: 1, specs: "" },
-    ]);
-  }
-
-  function updateEquipment(index: number, item: PackageEquipment) {
+  function toggleInfraestrutura(key: string) {
     update(
-      "equipamentos",
-      data.equipamentos.map((current, i) => (i === index ? item : current)),
-    );
-  }
-
-  function removeEquipment(index: number) {
-    update(
-      "equipamentos",
-      data.equipamentos.filter((_, i) => i !== index),
+      "infraestrutura",
+      data.infraestrutura.includes(key)
+        ? data.infraestrutura.filter((current) => current !== key)
+        : [...data.infraestrutura, key],
     );
   }
 
@@ -142,83 +137,40 @@ export function PackageForm({ resources, initialData, packageId }: PackageFormPr
         </div>
       </fieldset>
 
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-primary-800 text-sm font-medium">Equipamentos</h3>
-          <button
-            type="button"
-            onClick={addEquipment}
-            className="border-primary-200 text-primary-800 hover:bg-primary-50 rounded-md border px-3 py-1.5 text-sm transition-colors"
-          >
-            + Adicionar equipamento
-          </button>
-        </div>
-        {data.equipamentos.length === 0 && (
-          <p className="text-primary-700 text-sm">Nenhum equipamento adicionado.</p>
-        )}
-        {data.equipamentos.map((item, index) => (
-          <div key={index} className="border-primary-100 flex flex-col gap-3 rounded-md border p-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="flex flex-1 flex-col gap-1">
-                <label
-                  className="text-primary-800 text-sm font-medium"
-                  htmlFor={`pkg-eq-${index}-name`}
-                >
-                  Equipamento
-                </label>
-                <input
-                  id={`pkg-eq-${index}-name`}
-                  type="text"
-                  value={item.name}
-                  onChange={(e) => updateEquipment(index, { ...item, name: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex w-full flex-col gap-1 sm:w-24">
-                <label
-                  className="text-primary-800 text-sm font-medium"
-                  htmlFor={`pkg-eq-${index}-qty`}
-                >
-                  Qtd.
-                </label>
-                <input
-                  id={`pkg-eq-${index}-qty`}
-                  type="number"
-                  min={1}
-                  value={item.quantity}
-                  onChange={(e) =>
-                    updateEquipment(index, { ...item, quantity: Number(e.target.value) })
-                  }
-                  className={inputClass}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeEquipment(index)}
-                className="border-primary-200 rounded-md border px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
-              >
-                Remover
-              </button>
-            </div>
-            <div className="flex flex-col gap-1">
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-primary-800 text-sm font-medium">Infraestrutura e operação</legend>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {infrastructures.map((infrastructure) => {
+            const checked = data.infraestrutura.includes(infrastructure.key);
+            return (
               <label
-                className="text-primary-800 text-sm font-medium"
-                htmlFor={`pkg-eq-${index}-specs`}
+                key={infrastructure.id}
+                className={`flex cursor-pointer items-start gap-2 rounded-md border p-3 transition-colors ${
+                  checked
+                    ? "border-accent-300 bg-accent-50"
+                    : "border-primary-200 hover:bg-primary-50"
+                }`}
               >
-                Especificações
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleInfraestrutura(infrastructure.key)}
+                  className="mt-1"
+                />
+                <span className="flex flex-col">
+                  <span className="text-primary-900 text-sm font-medium">
+                    {infrastructure.title}
+                  </span>
+                  <span className="text-primary-700 text-xs">{infrastructure.description}</span>
+                </span>
               </label>
-              <input
-                id={`pkg-eq-${index}-specs`}
-                type="text"
-                value={item.specs}
-                onChange={(e) => updateEquipment(index, { ...item, specs: e.target.value })}
-                placeholder='Ex: Tela 15,6", Ryzen 5, 16GB RAM'
-                className={inputClass}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+        {infrastructures.length === 0 && (
+          <p className="text-primary-700 text-sm">Nenhum item de infraestrutura cadastrado.</p>
+        )}
+      </fieldset>
 
       {message && <p className="text-sm text-red-600">{message}</p>}
 

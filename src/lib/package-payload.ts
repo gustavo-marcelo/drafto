@@ -1,11 +1,6 @@
 export type PackagePayload = {
   recursos?: string[];
-  equipamentos?: {
-    name: string;
-    quantity?: number;
-    specs?: string;
-    description?: string;
-  }[];
+  infraestrutura?: string[];
 };
 
 export function parsePackagePayload(payload: unknown): PackagePayload {

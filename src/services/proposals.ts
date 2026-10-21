@@ -69,7 +69,7 @@ export async function getProposalById(id: string) {
       client: true,
       author: { select: { id: true, name: true, email: true } },
       modules: true,
-      equipment: true,
+      infrastructure: true,
       payments: { orderBy: { dueDate: "asc" } },
       schedule: { orderBy: { position: "asc" } },
       package: true,
@@ -83,7 +83,7 @@ export async function getProposalByShareId(shareId: string) {
     include: {
       client: true,
       modules: true,
-      equipment: true,
+      infrastructure: true,
       payments: { orderBy: { dueDate: "asc" } },
       schedule: { orderBy: { position: "asc" } },
     },

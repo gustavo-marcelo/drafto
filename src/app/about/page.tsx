@@ -7,11 +7,11 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  "Wizard guiado por etapas: evento, cliente, recursos, equipamentos, operacional e condições comerciais.",
+  "Wizard guiado por etapas: evento, cliente, recursos, infraestrutura, operacional e condições comerciais.",
   "Pré-visualização em tempo real do documento de proposta durante o preenchimento.",
   "Exportação em PDF de 3 páginas com a identidade da sua empresa: logo, cores, assinatura e rodapé.",
   "Link público para compartilhar a proposta com o cliente, sem necessidade de cadastro.",
-  "Gestão de clientes, pacotes e recursos reutilizáveis entre propostas.",
+  "Gestão de clientes, pacotes, recursos e infraestrutura reutilizáveis entre propostas.",
   "Cronograma operacional e cronograma de pagamento embutidos no documento.",
   "Configurações globais de identidade e contato usadas em todas as propostas.",
   "Contas de acesso para a equipe, com dados isolados por usuário.",

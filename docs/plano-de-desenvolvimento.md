@@ -39,19 +39,19 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 ### Fase 1 — Modelo de Dados e Auth (Semana 2) ✅ CONCLUÍDA
 
-| #   | Etapa                                                                        | Entregável                | Status |
-| --- | ---------------------------------------------------------------------------- | ------------------------- | ------ |
-| 1.1 | Modelar entidades: `Proposta`, `Cliente`, `Equipamento`, `Pacote`, `Usuario` | Schema no ORM + migrações | ✅     |
-| 1.2 | Implementar autenticação (Auth.js / Clerk / Supabase Auth)                   | Login/logout funcionando  | ✅     |
-| 1.3 | Proteger rotas do dashboard via middleware                                   | Área logada isolada       | ⚠️     |
-| 1.4 | Seed de dados de teste                                                       | Ambiente de dev populado  | ✅     |
+| #   | Etapa                                                                           | Entregável                | Status |
+| --- | ------------------------------------------------------------------------------- | ------------------------- | ------ |
+| 1.1 | Modelar entidades: `Proposta`, `Cliente`, `Infraestrutura`, `Pacote`, `Usuario` | Schema no ORM + migrações | ✅     |
+| 1.2 | Implementar autenticação (Auth.js / Clerk / Supabase Auth)                      | Login/logout funcionando  | ✅     |
+| 1.3 | Proteger rotas do dashboard via middleware                                      | Área logada isolada       | ⚠️     |
+| 1.4 | Seed de dados de teste                                                          | Ambiente de dev populado  | ✅     |
 
 **Critério de saída:** usuário loga e o schema suporta todos os blocos da especificação (2.1–2.5). ✅ **Atendido.**
 
 **Notas de implementação:**
 
 - Auth própria com `bcryptjs` (hash) + `jose` (JWT) + cookie de sessão — não foi usada lib de auth de terceiros.
-- Modelos no schema: `User`, `Resource`, `Client`, `Package`, `Proposal`, `ProposalModule`, `Equipment`, `Payment` (enum `ProposalStatus`).
+- Modelos no schema: `User`, `Resource`, `Infrastructure`, `Client`, `Package`, `Proposal`, `ProposalModule`, `ProposalInfrastructure`, `Payment` (enum `ProposalStatus`).
 - **⚠️ 1.3 — Divergência do plano:** a proteção foi feita com `verifySession()` chamado em **cada** `page.tsx` e Server Action do dashboard **e** por `src/proxy.ts` (equivalente ao `middleware.ts` no Next 16 — renomeado para `proxy` nesta versão). Funciona, mas as checagens por página/action são repetitivas — centralizar é melhoria recomendada (ver §7).
 - Seed popula usuário demo (`demo@destrava.ai` / `proposta123`), cliente, pacote e proposta de exemplo.
 
@@ -80,14 +80,14 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 ### Fase 3 — Formulário Wizard (Semanas 5–6) ✅ CONCLUÍDA
 
-| #   | Etapa                                                                      | Entregável                            | Status |
-| --- | -------------------------------------------------------------------------- | ------------------------------------- | ------ |
-| 3.1 | Estrutura do wizard de 4 passos com navegação e validação por passo        | Wizard navegável                      | ✅     |
-| 3.2 | Passo 1: Dados do Evento e do Cliente                                      | Formulário completo                   | ✅     |
-| 3.3 | Passo 2: Módulos do sistema e equipamentos (checkboxes + campos editáveis) | Itens dinâmicos                       | ✅     |
-| 3.4 | Passo 3: Valores, parcelamento e condições comerciais                      | Tabela financeira editável            | ✅     |
-| 3.5 | Passo 4: Requisitos operacionais e pré-visualização                        | Formulário final                      | ✅     |
-| 3.6 | Templates reutilizáveis ("Pacotes Padrão")                                 | CRUD de pacotes + aplicação no wizard |
+| #   | Etapa                                                                          | Entregável                            | Status |
+| --- | ------------------------------------------------------------------------------ | ------------------------------------- | ------ |
+| 3.1 | Estrutura do wizard de 4 passos com navegação e validação por passo            | Wizard navegável                      | ✅     |
+| 3.2 | Passo 1: Dados do Evento e do Cliente                                          | Formulário completo                   | ✅     |
+| 3.3 | Passo 2: Módulos do sistema e infraestrutura (checkboxes a partir do catálogo) | Itens dinâmicos                       | ✅     |
+| 3.4 | Passo 3: Valores, parcelamento e condições comerciais                          | Tabela financeira editável            | ✅     |
+| 3.5 | Passo 4: Requisitos operacionais e pré-visualização                            | Formulário final                      | ✅     |
+| 3.6 | Templates reutilizáveis ("Pacotes Padrão")                                     | CRUD de pacotes + aplicação no wizard |
 
 **Critério de saída:** proposta preenchida de ponta a ponta sem tocar o banco manualmente. ✅ **Atendido.**
 
@@ -115,7 +115,7 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 - **Decisão tomada:** Puppeteer (HTML→PDF) em vez de `@react-pdf/renderer` — fidelidade pixel-perfect ao template CSS.
 - **Template compartilhado:** `ProposalDocumentView` (React) + `PROPOSAL_DOCUMENT_CSS` (string injetada) servem o preview em tempo real no wizard, a página pública e o PDF — sem drift entre eles.
-- **Documento:** 3 páginas A4 (Apresentação/Recursos/Cliente · Equipamentos/Requisitos · Valores/Aceite/Assinaturas), "Página X de 3" no rodapé.
+- **Documento:** 3 páginas A4 (Apresentação/Recursos/Infraestrutura/Cliente · Requisitos/Cronograma · Valores/Aceite/Assinaturas), "Página X de 3" no rodapé.
 - **Split-screen:** wizard reestruturado em grid `lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]`, preview à direita com escala 0.42, atualiza a cada digitação via `wizardToDocument(data, selectedClient)`.
 - **PDF:** `services/proposal-pdf.ts` gera HTML do componente e renderiza via Puppeteer (headless, args anti-sandbox). Rotas: `/api/propostas/[id]/pdf` (autenticada) e `/api/propostas/publicas/[shareId]/pdf` (pública).
 - **Link público:** `Proposal.shareId` (16 chars, `crypto.getRandomValues`) + página `/p/[shareId]` somente-leitura com botão "Baixar PDF"; ações "Baixar PDF" e "Abrir link público" na página de detalhe da proposta.
@@ -160,8 +160,8 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 **Notas de implementação:**
 
-- **6.1 ✅:** `vitest.config.ts` (alias `@`, coverage v8, `src/**/*.test.ts`). **12 arquivos / 87 testes** cobrindo `lib/codes`, `lib/format`, `lib/package-payload`, `lib/proposal-document-wizard`, `lib/proposal-status`, `lib/validations/*`, `lib/env`, `lib/logger`, `lib/monitoring`, `lib/observability` e `services/expiration` (Prisma mockado). Scripts `test`, `test:watch`, `test:coverage`.
-- **6.2 ✅:** `playwright.config.ts` (chromium, webServer em `:3200` com `build && start`, `reuseExistingServer: !CI`, retries em CI), `e2e/fixtures.ts` (credenciais do seed + `login()`) e specs `auth.spec.ts` / `proposal.spec.ts` / `users.spec.ts`. **15 testes**: login válido/inválido, rota protegida, logout, ausência do cadastro público, navegação, criação completa pelo wizard (com cronograma), salvar edição, PDF autenticado/público e gestão de usuários (criar, duplicidade, editar e alternar visibilidade da senha). Limpeza automática das propostas `E2E Proposta *` e usuários `e2e-*` via `afterAll`. Scripts `test:e2e`, `test:e2e:ui`.
+- **6.1 ✅:** `vitest.config.ts` (alias `@`, coverage v8, `src/**/*.test.ts`). **13 arquivos / 107 testes** cobrindo `lib/codes`, `lib/format`, `lib/package-payload`, `lib/proposal-document-wizard`, `lib/proposal-status`, `lib/validations/*`, `lib/env`, `lib/logger`, `lib/monitoring`, `lib/observability` e `services/expiration` (Prisma mockado). Scripts `test`, `test:watch`, `test:coverage`.
+- **6.2 ✅:** `playwright.config.ts` (chromium, webServer em `:3200` com `build && start`, `reuseExistingServer: !CI`, retries em CI), `e2e/fixtures.ts` (credenciais do seed + `login()`) e specs `auth.spec.ts` / `proposal.spec.ts` / `users.spec.ts` / `infrastructure.spec.ts`. **18 testes**: login válido/inválido, rota protegida, logout, ausência do cadastro público, navegação, criação completa pelo wizard (com cronograma), salvar edição, PDF autenticado/público e gestão de usuários (criar, duplicidade, editar e alternar visibilidade da senha). Limpeza automática das propostas `E2E Proposta *` e usuários `e2e-*` via `afterAll`. Scripts `test:e2e`, `test:e2e:ui`.
 - **CI:** job `quality` agora roda `npm run test`; novo job `e2e` sobe Postgres, aplica `migrate deploy` + `db:seed`, instala Chromium (`playwright install --with-deps`) e roda `npm run test:e2e`, publicando o `playwright-report` como artefato.
 - **6.4 ✅:** validação de env com Zod em `src/lib/env.ts` (`getEnv()`, cacheado, falha cedo com mensagens por variável); `SESSION_SECRET` exige ≥32 caracteres; `types/env.d.ts` ampliado (`SENTRY_*`, `LOG_LEVEL`, `CI`, `E2E_PORT`). `.env.example` reescrito e comentado (obrigatórias × opcionais + como gerar segredos). Guia completo em `docs/deploy-e-observabilidade.md`. +2 arquivos de teste (`env.test.ts`, `monitoring.test.ts`).
 - **6.5 ✅:** logger estruturado `pino` (`src/lib/logger.ts`) com redaction de segredos e `pino-pretty` em dev; integrado em `services/proposal-pdf.ts`, `actions/proposals.ts`, `actions/clients.ts` e no `onRequestError` global (`src/instrumentation.ts`). Sentry **opcional via DSN** (`@sentry/nextjs` v11): `instrumentation.ts` (server node/edge) + `instrumentation-client.ts` (browser + breadcrumbs de navegação), `captureServerError` (`lib/observability.ts`) e `reportClientError` (`lib/report-client-error.ts`). Error boundaries novos: `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` (e `dashboard/error.tsx` instrumentado) — todos no-op sem DSN.
@@ -172,15 +172,16 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 Durante as Fases 1–3 foram acrescentados itens não previstos, já integrados:
 
-| Item                            | Descrição                                                                                                                                                                                                                 |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Códigos de entidade**         | `Client.clientCode` (`CL####.####`) e `Proposal.code` (`PR####.####`) únicos, com geração automática (`services/codes.ts`) e exibição nas telas.                                                                          |
-| **Contato do cliente ampliado** | Campos `phone` (formatação BR) e `email` (validado) no cliente, com busca e seed.                                                                                                                                         |
-| **Troca de paleta de cores**    | Primary `#123B36` (verde-petróleo) + accent `#C7A66B` (dourado), escalas 50–950 regeradas em OKLCH e contraste AA/AAA revalidado.                                                                                         |
-| **Recurso (`Resource`)**        | Modelo/tela de "Recursos" adicionado (`dashboard/recursos/*`) além do previsto.                                                                                                                                           |
-| **Textos pré-definidos**        | `TextPreset` (solução/requisitos/aceite/custos) com CRUD e inserção nos campos do wizard.                                                                                                                                 |
-| **Edição por etapas**           | Cabeçalho com etapas 1–4 clicáveis (validação ao pular), salvar com toasts e machine de status ampliada (`COMPLETED`/`CANCELLED`, "Aceita").                                                                              |
-| **Gestão de usuários**          | Cadastro público removido (rota `/register` eliminada). Novos usuários são criados por usuários logados em `dashboard/usuarios` (`instant = false`); usuário inicial criado pelo seed via `ADMIN_EMAIL`/`ADMIN_PASSWORD`. |
+| Item                                  | Descrição                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Códigos de entidade**               | `Client.clientCode` (`CL####.####`) e `Proposal.code` (`PR####.####`) únicos, com geração automática (`services/codes.ts`) e exibição nas telas.                                                                                                                                                                                                               |
+| **Contato do cliente ampliado**       | Campos `phone` (formatação BR) e `email` (validado) no cliente, com busca e seed.                                                                                                                                                                                                                                                                              |
+| **Troca de paleta de cores**          | Primary `#123B36` (verde-petróleo) + accent `#C7A66B` (dourado), escalas 50–950 regeradas em OKLCH e contraste AA/AAA revalidado.                                                                                                                                                                                                                              |
+| **Recurso (`Resource`)**              | Modelo/tela de "Recursos" adicionado (`dashboard/recursos/*`) além do previsto.                                                                                                                                                                                                                                                                                |
+| **Infraestrutura (`Infrastructure`)** | Catálogo e tela de "Infraestrutura e operação" (`dashboard/infraestrutura/*`), no mesmo padrão de `Resource`. Substitui o modelo `Equipment`: os equipamentos existentes foram convertidos em itens de infraestrutura pela migração `20261021153000_infrastructure_replaces_equipment` e a seção do PDF passou a ficar na página 1, logo abaixo de "Recursos". |
+| **Textos pré-definidos**              | `TextPreset` (solução/requisitos/aceite/custos) com CRUD e inserção nos campos do wizard.                                                                                                                                                                                                                                                                      |
+| **Edição por etapas**                 | Cabeçalho com etapas 1–4 clicáveis (validação ao pular), salvar com toasts e machine de status ampliada (`COMPLETED`/`CANCELLED`, "Aceita").                                                                                                                                                                                                                   |
+| **Gestão de usuários**                | Cadastro público removido (rota `/register` eliminada). Novos usuários são criados por usuários logados em `dashboard/usuarios` (`instant = false`); usuário inicial criado pelo seed via `ADMIN_EMAIL`/`ADMIN_PASSWORD`.                                                                                                                                      |
 
 ---
 

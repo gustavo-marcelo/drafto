@@ -6,11 +6,10 @@ export const wizardModuleSchema = z.object({
   description: z.string().optional().default(""),
 });
 
-export const wizardEquipmentSchema = z.object({
-  name: z.string().min(1, { error: "Informe o nome do equipamento." }).trim(),
-  description: z.string().trim().optional().default(""),
-  quantity: z.coerce.number().int().min(1, { error: "Quantidade mínima é 1." }),
-  specs: z.string().trim().optional().default(""),
+export const wizardInfrastructureSchema = z.object({
+  key: z.string(),
+  title: z.string(),
+  description: z.string().optional().default(""),
 });
 
 export const wizardPaymentSchema = z.object({
@@ -37,7 +36,7 @@ export const wizardStep1Schema = z.object({
 export const wizardStep2Schema = z.object({
   solution: z.string().trim().optional().default(""),
   modules: z.array(wizardModuleSchema).default([]),
-  equipment: z.array(wizardEquipmentSchema).default([]),
+  infrastructure: z.array(wizardInfrastructureSchema).default([]),
 });
 
 export const wizardStep3Schema = z.object({
@@ -61,10 +60,10 @@ export const wizardSchema = wizardStep1Schema
   .merge(wizardStep3Schema)
   .merge(wizardStep4Schema);
 
-export type WizardEquipment = z.infer<typeof wizardEquipmentSchema>;
 export type WizardPayment = z.infer<typeof wizardPaymentSchema>;
 export type WizardSchedule = z.infer<typeof wizardScheduleSchema>;
 export type WizardModule = z.infer<typeof wizardModuleSchema>;
+export type WizardInfrastructure = z.infer<typeof wizardInfrastructureSchema>;
 export type WizardData = z.infer<typeof wizardSchema>;
 
 export type WizardActionResult =

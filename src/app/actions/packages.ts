@@ -22,12 +22,7 @@ export async function savePackage(
 
   const payload = {
     recursos: data.recursos,
-    equipamentos: data.equipamentos.map((item) => ({
-      name: item.name,
-      description: item.description || undefined,
-      quantity: item.quantity,
-      specs: item.specs || undefined,
-    })),
+    infraestrutura: data.infraestrutura,
   };
 
   const base = {

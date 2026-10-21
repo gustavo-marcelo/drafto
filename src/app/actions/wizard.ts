@@ -17,12 +17,11 @@ function buildRelations(data: ReturnType<typeof wizardSchema.parse>) {
         description: module.description || null,
       })),
     },
-    equipment: {
-      create: data.equipment.map((item) => ({
-        name: item.name,
+    infrastructure: {
+      create: data.infrastructure.map((item) => ({
+        key: item.key,
+        title: item.title,
         description: item.description || null,
-        quantity: item.quantity,
-        specs: item.specs || null,
       })),
     },
     payments: {
@@ -81,7 +80,7 @@ export async function saveProposalFull(
   const stored = await prisma.$transaction(async (tx) => {
     if (proposalId) {
       await tx.proposalModule.deleteMany({ where: { proposalId } });
-      await tx.equipment.deleteMany({ where: { proposalId } });
+      await tx.proposalInfrastructure.deleteMany({ where: { proposalId } });
       await tx.payment.deleteMany({ where: { proposalId } });
       await tx.proposalScheduleItem.deleteMany({ where: { proposalId } });
 
@@ -123,7 +122,7 @@ export async function applyPackageToProposal(
 
   const payload = (pkg.payload ?? {}) as {
     recursos?: string[];
-    equipamentos?: { name: string; quantity?: number; specs?: string; description?: string }[];
+    infraestrutura?: string[];
   };
 
   const modules = (payload.recursos ?? []).map((title) => ({
@@ -132,11 +131,10 @@ export async function applyPackageToProposal(
     description: null,
   }));
 
-  const equipment = (payload.equipamentos ?? []).map((item) => ({
-    name: item.name,
-    description: item.description ?? null,
-    quantity: item.quantity ?? 1,
-    specs: item.specs ?? null,
+  const infrastructure = (payload.infraestrutura ?? []).map((title) => ({
+    key: title,
+    title,
+    description: null,
   }));
 
   await prisma.$transaction(async (tx) => {
@@ -146,7 +144,7 @@ export async function applyPackageToProposal(
         packageId,
         audience: pkg.audience ?? undefined,
         modules: { create: modules },
-        equipment: { create: equipment },
+        infrastructure: { create: infrastructure },
       },
     });
   });

@@ -157,7 +157,7 @@ export function StepOperacional({ data, errors, clients, onChange }: StepOperaci
                     type="text"
                     value={item.description}
                     onChange={(e) => updateSchedule(index, { description: e.target.value })}
-                    placeholder="Ex: Instalação, configuração e testes dos equipamentos."
+                    placeholder="Ex: Instalação, configuração e testes da infraestrutura."
                     className={inputClass}
                   />
                 </div>
@@ -186,8 +186,8 @@ export function StepOperacional({ data, errors, clients, onChange }: StepOperaci
             value={data.modules.map((m) => m.title).join(", ")}
           />
           <ReviewRow
-            label="Equipamentos"
-            value={data.equipment.map((item) => `${item.quantity}x ${item.name}`).join(", ")}
+            label="Infraestrutura e operação"
+            value={data.infrastructure.map((item) => item.title).join(", ")}
           />
           <ReviewRow
             label="Parcelas"

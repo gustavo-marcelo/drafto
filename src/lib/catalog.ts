@@ -4,6 +4,12 @@ export type DefaultResource = {
   description: string;
 };
 
+export type DefaultInfrastructure = {
+  key: string;
+  title: string;
+  description: string;
+};
+
 export const DEFAULT_RESOURCES: DefaultResource[] = [
   {
     key: "importacao-participantes",
@@ -44,6 +50,39 @@ export const DEFAULT_RESOURCES: DefaultResource[] = [
     key: "dashboard-tempo-real",
     title: "Dashboard em tempo real",
     description: "Acompanhamento de fluxo e presença em tempo real.",
+  },
+];
+
+export const DEFAULT_INFRASTRUCTURES: DefaultInfrastructure[] = [
+  {
+    key: "totens-de-autoatendimento",
+    title: "Totens de autoatendimento",
+    description: "Unidades self-service para emissão de credenciais no evento.",
+  },
+  {
+    key: "estacoes-de-impressao",
+    title: "Estações de impressão",
+    description: "Impressoras para crachás, etiquetas e materiais do participante.",
+  },
+  {
+    key: "estacoes-de-cadastro",
+    title: "Estações de cadastro",
+    description: "Baias com operador para cadastro e confirmação de participantes.",
+  },
+  {
+    key: "rede-e-conectividade",
+    title: "Rede e conectividade",
+    description: "Infraestrutura de rede dedicada com redundância para o credenciamento.",
+  },
+  {
+    key: "sala-de-operacao",
+    title: "Sala de operação",
+    description: "Espaço de coordenação, monitoramento e apoio às equipes de campo.",
+  },
+  {
+    key: "equipe-de-suporte-tecnico",
+    title: "Equipe de suporte técnico",
+    description: "Profissionais de manutenção em site durante todo o evento.",
   },
 ];
 

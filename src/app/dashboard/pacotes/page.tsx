@@ -35,7 +35,7 @@ export default async function PackagesPage() {
                 <th className="px-4 py-3 font-medium">Nome</th>
                 <th className="px-4 py-3 font-medium">Público</th>
                 <th className="px-4 py-3 font-medium">Recursos</th>
-                <th className="px-4 py-3 font-medium">Equipamentos</th>
+                <th className="px-4 py-3 font-medium">Infraestrutura</th>
                 <th className="px-4 py-3 text-right font-medium">Ações</th>
               </tr>
             </thead>
@@ -58,7 +58,7 @@ export default async function PackagesPage() {
                     <td className="text-primary-700 px-4 py-3">{pkg.audience ?? "—"}</td>
                     <td className="text-primary-700 px-4 py-3">{payload.recursos?.length ?? 0}</td>
                     <td className="text-primary-700 px-4 py-3">
-                      {payload.equipamentos?.length ?? 0}
+                      {payload.infraestrutura?.length ?? 0}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">

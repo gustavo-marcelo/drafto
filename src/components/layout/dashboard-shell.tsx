@@ -12,6 +12,7 @@ import {
   IconMenu,
   IconPackage,
   IconSettings,
+  IconTool,
   IconUsers,
 } from "@/components/layout/icons";
 
@@ -27,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/clientes", label: "Clientes", icon: IconUsers },
   { href: "/dashboard/pacotes", label: "Pacotes", icon: IconPackage },
   { href: "/dashboard/recursos", label: "Recursos", icon: IconLayers },
+  { href: "/dashboard/infraestrutura", label: "Infraestrutura e operação", icon: IconTool },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: IconSettings },
   { href: "/dashboard/usuarios", label: "Usuários", icon: IconUsers },
 ];

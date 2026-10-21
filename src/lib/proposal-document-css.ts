@@ -195,22 +195,6 @@ export const PROPOSAL_DOCUMENT_CSS = `
   .doc-item-title { font-weight: 600; color: var(--doc-primary-700); }
   .doc-item-desc { color: var(--doc-muted); font-size: 8.5pt; }
 
-  .doc-equip-row {
-    display: grid;
-    grid-template-columns: 14mm 1fr;
-    gap: 3mm;
-    padding: 2.2mm 0;
-    border-bottom: 1px solid var(--doc-line);
-  }
-  .doc-equip-row:last-child { border-bottom: none; }
-  .doc-equip-qty {
-    font-size: 12pt;
-    font-weight: 700;
-    color: var(--doc-primary);
-    text-align: center;
-  }
-  .doc-equip-specs { color: var(--doc-muted); font-size: 8.5pt; margin-top: 0.5mm; }
-
   .doc-schedule-row {
     display: grid;
     grid-template-columns: 34mm 1fr;

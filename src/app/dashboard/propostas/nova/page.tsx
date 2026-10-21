@@ -1,5 +1,6 @@
 import { ProposalWizard } from "@/components/features/wizard/proposal-wizard";
 import { verifySession } from "@/lib/auth";
+import { listInfrastructures } from "@/services/infrastructures";
 import { listClients, listPackages } from "@/services/proposals";
 import { listResources } from "@/services/resources";
 import { getSettings } from "@/services/settings";
@@ -9,10 +10,11 @@ export const instant = false;
 export default async function NewProposalPage() {
   await verifySession();
 
-  const [clients, packages, resources, settings] = await Promise.all([
+  const [clients, packages, resources, infrastructures, settings] = await Promise.all([
     listClients(),
     listPackages(),
     listResources(),
+    listInfrastructures(),
     getSettings(),
   ]);
 
@@ -23,6 +25,7 @@ export default async function NewProposalPage() {
         clients={clients}
         packages={packages}
         resources={resources}
+        infrastructures={infrastructures}
         settings={settings}
       />
     </div>

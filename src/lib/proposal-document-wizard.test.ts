@@ -16,7 +16,7 @@ function baseWizard(overrides: Partial<WizardData> = {}): WizardData {
     clientId: "",
     solution: "",
     modules: [],
-    equipment: [],
+    infrastructure: [],
     packageId: "",
     paymentMethod: "",
     validUntil: "",
@@ -62,11 +62,13 @@ describe("wizardToDocument", () => {
     expect(doc.totalAmount).toBe(0);
   });
 
-  it("mapeia módulos, equipamentos, pagamentos e cronograma", () => {
+  it("mapeia módulos, infraestrutura, pagamentos e cronograma", () => {
     const doc = wizardToDocument(
       baseWizard({
         modules: [{ key: "m1", title: "Credenciamento", description: "  " }],
-        equipment: [{ name: "Totem", description: "", quantity: 5, specs: "Full HD" }],
+        infrastructure: [
+          { key: "totens", title: "Totens de autoatendimento", description: " 5 un. " },
+        ],
         payments: [{ dueDate: "2026-11-01", amount: 12500 }],
         schedule: [{ date: "17/11/2026", title: "Montagem", description: "Testes" }],
       }),
@@ -74,8 +76,8 @@ describe("wizardToDocument", () => {
     );
 
     expect(doc.modules).toEqual([{ title: "Credenciamento", description: null }]);
-    expect(doc.equipment).toEqual([
-      { name: "Totem", description: null, quantity: 5, specs: "Full HD" },
+    expect(doc.infrastructure).toEqual([
+      { title: "Totens de autoatendimento", description: "5 un." },
     ]);
     expect(doc.payments).toEqual([{ dueDate: "2026-11-01", amount: 12500 }]);
     expect(doc.schedule).toEqual([

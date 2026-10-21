@@ -19,14 +19,14 @@ import { StepOperacional } from "./steps/step-operacional";
 
 const STEPS = [
   { id: 1, label: "Evento e Cliente" },
-  { id: 2, label: "Módulos e Equipamentos" },
+  { id: 2, label: "Módulos e Infraestrutura" },
   { id: 3, label: "Valores e Pagamento" },
   { id: 4, label: "Operacional e Revisão" },
 ];
 
 const STEP_FIELDS: Record<number, string[]> = {
   1: ["title", "subtitle", "eventDate", "issuedAt", "location", "audience", "clientId"],
-  2: ["solution", "modules", "equipment"],
+  2: ["solution", "modules", "infrastructure"],
   3: ["packageId", "totalAmount", "paymentMethod", "validUntil", "includedCosts", "payments"],
   4: ["requirements", "disclaimer", "acceptanceNote", "schedule"],
 };
@@ -45,6 +45,12 @@ export type ResourceOption = {
   title: string;
   description?: string | null;
 };
+export type InfrastructureOption = {
+  id: string;
+  key: string;
+  title: string;
+  description?: string | null;
+};
 
 const EMPTY: WizardData = {
   title: "",
@@ -56,7 +62,7 @@ const EMPTY: WizardData = {
   clientId: "",
   solution: "",
   modules: [],
-  equipment: [],
+  infrastructure: [],
   packageId: "",
   totalAmount: undefined,
   paymentMethod: "",
@@ -73,7 +79,7 @@ const DEFAULT_SCHEDULE: WizardData["schedule"] = [
   {
     date: "",
     title: "Montagem e preparação",
-    description: "Instalação, configuração e testes dos equipamentos e da operação.",
+    description: "Instalação, configuração e testes da infraestrutura e da operação.",
   },
   {
     date: "",
@@ -83,7 +89,7 @@ const DEFAULT_SCHEDULE: WizardData["schedule"] = [
   {
     date: "Após encerramento",
     title: "Desmontagem e consolidação",
-    description: "Retirada dos equipamentos e disponibilização da base consolidada.",
+    description: "Retirada da infraestrutura e disponibilização da base consolidada.",
   },
 ];
 
@@ -91,6 +97,7 @@ type WizardProps = {
   clients: ClientOption[];
   packages: PackageOption[];
   resources: ResourceOption[];
+  infrastructures: InfrastructureOption[];
   initialData?: Partial<WizardData>;
   proposalId?: string;
   settings?: ProposalDocumentSettings;
@@ -100,6 +107,7 @@ export function ProposalWizard({
   clients,
   packages,
   resources,
+  infrastructures,
   initialData,
   proposalId,
   settings = {},
@@ -133,6 +141,27 @@ export function ProposalWizard({
         ...prev,
         modules: [
           ...prev.modules,
+          { key: catalog.key, title: catalog.title, description: catalog.description ?? "" },
+        ],
+      };
+    });
+  }
+
+  function toggleInfrastructure(key: string) {
+    setData((prev) => {
+      const exists = prev.infrastructure.some((item) => item.key === key);
+      if (exists) {
+        return {
+          ...prev,
+          infrastructure: prev.infrastructure.filter((item) => item.key !== key),
+        };
+      }
+      const catalog = infrastructures.find((item) => item.key === key);
+      if (!catalog) return prev;
+      return {
+        ...prev,
+        infrastructure: [
+          ...prev.infrastructure,
           { key: catalog.key, title: catalog.title, description: catalog.description ?? "" },
         ],
       };
@@ -272,8 +301,10 @@ export function ProposalWizard({
                 errors={errors}
                 packages={packages}
                 resources={resources}
+                infrastructures={infrastructures}
                 onChange={update}
                 onToggleModule={toggleModule}
+                onToggleInfrastructure={toggleInfrastructure}
               />
             )}
             {step === 3 && <StepFinanceiro data={data} errors={errors} onChange={update} />}

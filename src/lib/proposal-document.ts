@@ -3,13 +3,6 @@ export type ProposalDocumentItem = {
   description?: string | null;
 };
 
-export type ProposalDocumentEquipment = {
-  name: string;
-  description?: string | null;
-  quantity: number;
-  specs?: string | null;
-};
-
 export type ProposalDocumentPayment = {
   dueDate: string;
   amount: number;
@@ -60,7 +53,7 @@ export type ProposalDocument = {
   totalAmount?: number | null;
   client: ProposalDocumentClient | null;
   modules: ProposalDocumentItem[];
-  equipment: ProposalDocumentEquipment[];
+  infrastructure: ProposalDocumentItem[];
   payments: ProposalDocumentPayment[];
   schedule: ProposalDocumentScheduleItem[];
   settings: ProposalDocumentSettings;

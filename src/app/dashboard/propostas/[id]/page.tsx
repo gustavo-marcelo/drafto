@@ -7,6 +7,7 @@ import { verifySession } from "@/lib/auth";
 import { toDateInputValue } from "@/lib/format";
 import { getProposalById, listClients, listPackages } from "@/services/proposals";
 import { expireOverdueProposals } from "@/services/expiration";
+import { listInfrastructures } from "@/services/infrastructures";
 import { listResources } from "@/services/resources";
 import { getSettings } from "@/services/settings";
 
@@ -19,11 +20,12 @@ export default async function ProposalDetailPage({ params }: { params: Params })
   await expireOverdueProposals();
 
   const { id } = await params;
-  const [proposal, clients, packages, resources, settings] = await Promise.all([
+  const [proposal, clients, packages, resources, infrastructures, settings] = await Promise.all([
     getProposalById(id),
     listClients(),
     listPackages(),
     listResources(),
+    listInfrastructures(),
     getSettings(),
   ]);
 
@@ -54,6 +56,7 @@ export default async function ProposalDetailPage({ params }: { params: Params })
         clients={clients}
         packages={packages}
         resources={resources}
+        infrastructures={infrastructures}
         proposalId={proposal.id}
         settings={settings}
         initialData={{
@@ -70,11 +73,10 @@ export default async function ProposalDetailPage({ params }: { params: Params })
             title: module.title,
             description: module.description ?? "",
           })),
-          equipment: proposal.equipment.map((item) => ({
-            name: item.name,
+          infrastructure: proposal.infrastructure.map((item) => ({
+            key: item.key,
+            title: item.title,
             description: item.description ?? "",
-            quantity: item.quantity,
-            specs: item.specs ?? "",
           })),
           packageId: proposal.packageId ?? "",
           totalAmount: proposal.totalAmount ? proposal.totalAmount.toNumber() : undefined,

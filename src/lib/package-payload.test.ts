@@ -10,17 +10,17 @@ describe("parsePackagePayload", () => {
     expect(parsePackagePayload(42)).toEqual({});
   });
 
-  it("preserva recursos e equipamentos válidos", () => {
+  it("preserva recursos e infraestrutura válidos", () => {
     const payload = {
       recursos: ["controle-de-acesso", "chapelaria"],
-      equipamentos: [{ name: "Totem", quantity: 5, specs: '15,6"' }],
+      infraestrutura: ["totens-de-autoatendimento"],
     };
     expect(parsePackagePayload(payload)).toEqual(payload);
   });
 
   it("aceita objeto parcial", () => {
     expect(parsePackagePayload({ recursos: ["a"] })).toEqual({ recursos: ["a"] });
-    expect(parsePackagePayload({ equipamentos: [] })).toEqual({ equipamentos: [] });
+    expect(parsePackagePayload({ infraestrutura: [] })).toEqual({ infraestrutura: [] });
   });
 
   it("retorna o mesmo objeto quando já é um payload tipado", () => {

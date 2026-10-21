@@ -38,7 +38,7 @@ type DocumentSourceProposal = {
     email: string | null;
   } | null;
   modules: { title: string; description: string | null }[];
-  equipment: { name: string; description: string | null; quantity: number; specs: string | null }[];
+  infrastructure: { key: string; title: string; description: string | null }[];
   payments: { dueDate: Date; amount: DecimalLike }[];
   schedule: { date: string; title: string; description: string | null }[];
 };
@@ -80,11 +80,9 @@ export function proposalToDocument(
       title: module.title,
       description: module.description,
     })),
-    equipment: proposal.equipment.map((item) => ({
-      name: item.name,
+    infrastructure: proposal.infrastructure.map((item) => ({
+      title: item.title,
       description: item.description,
-      quantity: item.quantity,
-      specs: item.specs,
     })),
     payments: proposal.payments.map((payment) => ({
       dueDate: payment.dueDate.toISOString(),
