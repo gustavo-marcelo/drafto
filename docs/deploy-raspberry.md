@@ -218,11 +218,20 @@ pm2 restart proposta    # reiniciar após atualizar o código
 ```bash
 cd ~/destrava.ai
 git pull
+
+# Não baixa o Chromium de novo (o do sistema é usado)
+export PUPPETEER_SKIP_DOWNLOAD=true
+
 npm ci
+npx prisma generate      # regera o cliente Prisma (npm ci apaga node_modules/.prisma)
 npx prisma migrate deploy
 npm run build
 pm2 restart proposta
 ```
+
+> O `npx prisma generate` é **obrigatório** depois do `npm ci`: ele recria o
+> cliente Prisma em `node_modules/.prisma`, sem o qual o build falha com
+> `Cannot find module '.prisma/client/default'`.
 
 ---
 
@@ -245,6 +254,22 @@ O `SESSION_SECRET` precisa ter 32+ caracteres. Gere com `openssl rand -base64 32
 O cookie de sessão está marcado como `Secure` e o acesso é por HTTP. Defina
 `COOKIE_SECURE="false"` no `.env` e reinicie (`pm2 restart proposta`). Isso é
 seguro para a rede local; ao usar HTTPS (com proxy/domínio), remova essa linha.
+
+**Build falha com `Cannot find module '.prisma/client/default'`**
+O `npm ci` remove a pasta `node_modules/.prisma` (cliente Prisma gerado).
+Regere antes do build:
+
+```bash
+npx prisma generate
+```
+
+Se o `generate` falhar baixando o engine (arquitetura `arm64`), confira a
+conexão com `binaries.prisma.sh` e use a versão de OpenSSL do sistema:
+
+```bash
+openssl version   # precisa ser 3.x
+sudo apt-get install -y libssl3
+```
 
 **Erro de conexão com o banco**
 Confirme que o Postgres está ativo (`sudo systemctl status postgresql`) e que o
@@ -272,6 +297,6 @@ git clone <repo> ~/destrava.ai && cd ~/destrava.ai
 PUPPETEER_SKIP_DOWNLOAD=true npm ci
 cp .env.example .env    # edite: DATABASE_URL, SESSION_SECRET, ADMIN_*, PUPPETEER_EXECUTABLE_PATH
 set -a; source .env; set +a
-npx prisma migrate deploy && npm run db:seed
+npx prisma generate && npx prisma migrate deploy && npm run db:seed
 npm run build && npm run start
 ```
