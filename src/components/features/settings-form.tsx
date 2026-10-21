@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useTransition } from "react";
 
 import { saveSettings } from "@/app/actions/settings";
@@ -129,9 +130,11 @@ export function SettingsForm({ initial }: SettingsFormProps) {
               title="Clique para escolher outra logo"
               className="group w-fit cursor-pointer"
             >
-              <img
+              <Image
                 src={data.logo ?? PLACEHOLDER_LOGO}
                 alt="Logo da empresa"
+                width={96}
+                height={96}
                 className="border-primary-200 h-24 w-24 rounded-md border object-contain transition-opacity group-hover:opacity-75"
               />
             </label>

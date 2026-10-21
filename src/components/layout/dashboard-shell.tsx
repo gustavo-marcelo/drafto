@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -72,7 +73,7 @@ export function DashboardShell({
               href="/dashboard"
               className="text-primary-900 flex items-center gap-2 font-semibold"
             >
-              <img src="/logo.png" alt="" className="h-7 w-7" />
+              <Image src="/logo.png" alt="" width={28} height={28} preload className="h-7 w-7" />
               <span className="text-base">Proposta.ai</span>
             </Link>
             <button

@@ -23,6 +23,9 @@ function Header({ document }: { document: ProposalDocument }) {
     <header className="doc-header">
       <div className="doc-brand">
         {logo ? (
+          // O documento é renderizado como HTML estático (preview e PDF via Puppeteer),
+          // onde o otimizador de imagens do Next não está disponível.
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={logo} alt={companyName(document)} className="doc-logo-img" />
         ) : (
           <div className="doc-logo">P</div>
