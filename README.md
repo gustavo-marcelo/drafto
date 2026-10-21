@@ -102,6 +102,7 @@ prisma/           # schema e migrações
 - [Especificação](./docs/especificacao.md)
 - [Plano de desenvolvimento](./docs/plano-de-desenvolvimento.md)
 - [Deploy e observabilidade](./docs/deploy-e-observabilidade.md)
+- [Deploy no Raspberry Pi](./docs/deploy-raspberry.md)
 - [Boas práticas Next.js](./docs/boas-praticas-nextjs.md)
 - [Padrão de cores](./docs/padrao-de-cores.md)
 

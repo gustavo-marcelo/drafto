@@ -104,6 +104,9 @@ docker compose --env-file .env.docker down -v         # para tudo e apaga o banc
 > **Segredos:** o `.env.docker` real está no `.gitignore`. Em produção, prefira
 > Docker secrets ou o gerenciador de segredos do provedor.
 
+> **Sem Docker?** Para rodar em um Raspberry Pi com PostgreSQL local, veja
+> [deploy-raspberry.md](./deploy-raspberry.md).
+
 ## 4. Logs estruturados
 
 O servidor usa [pino](https://getpino.io) em `src/lib/logger.ts`:
