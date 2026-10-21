@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { saveProposalFull } from "@/app/actions/wizard";
-import { ProposalDocumentView } from "@/components/proposal/proposal-document-view";
+import { ProposalDocumentAutoLayout } from "@/components/proposal/proposal-document-auto-layout";
 import { PROPOSAL_DOCUMENT_CSS } from "@/lib/proposal-document-css";
 import { wizardToDocument } from "@/lib/proposal-document-wizard";
 import type { ProposalDocumentSettings } from "@/lib/proposal-document";
@@ -132,6 +132,7 @@ export function ProposalWizard({
   const [clientList, setClientList] = useState<ClientOption[]>(clients);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [message, setMessage] = useState<string | null>(null);
+  const [pageCount, setPageCount] = useState(3);
   const [pending, startTransition] = useTransition();
 
   function update<K extends keyof WizardData>(key: K, value: WizardData[K]) {
@@ -358,12 +359,20 @@ export function ProposalWizard({
           <div className="border-primary-100 sticky top-6 overflow-hidden rounded-lg border bg-white">
             <div className="border-primary-100 bg-primary-50/60 flex items-center justify-between border-b px-4 py-3">
               <span className="text-primary-900 text-sm font-semibold">Pré-visualização</span>
-              <span className="text-primary-700 text-xs">3 páginas · A4</span>
+              <span className="text-primary-700 text-xs">{pageCount} páginas · A4</span>
             </div>
             <div className="doc-preview-scroll">
-              <div className="doc-preview-frame">
+              <div
+                className="doc-preview-frame"
+                style={{
+                  height: `calc((297mm * ${pageCount} + 8mm * ${Math.max(pageCount - 1, 0)}) * 0.42)`,
+                }}
+              >
                 <div className="doc-preview-scale">
-                  <ProposalDocumentView document={previewDocument} />
+                  <ProposalDocumentAutoLayout
+                    document={previewDocument}
+                    onPageCountChange={setPageCount}
+                  />
                 </div>
               </div>
             </div>

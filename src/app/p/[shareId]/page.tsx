@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { ProposalDocumentView } from "@/components/proposal/proposal-document-view";
+import { ProposalDocumentAutoLayout } from "@/components/proposal/proposal-document-auto-layout";
 import { PROPOSAL_DOCUMENT_CSS } from "@/lib/proposal-document-css";
 import { proposalToDocument } from "@/lib/proposal-document-db";
 import { getProposalByShareId } from "@/services/proposals";
@@ -30,7 +30,7 @@ export default async function PublicProposalPage({ params }: { params: Params })
             Baixar PDF
           </a>
         </div>
-        <ProposalDocumentView document={document} />
+        <ProposalDocumentAutoLayout document={document} />
       </main>
     </>
   );

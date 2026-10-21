@@ -128,4 +128,48 @@ describe("ProposalDocumentView", () => {
     expect(html).not.toContain("Valor total");
     expect(html).toContain("Investimento");
   });
+
+  it("mantém três páginas quando o catálogo cabe em uma", () => {
+    const html = render(
+      baseDocument({
+        modules: [{ title: "Controle de acesso" }],
+        infrastructure: [{ title: "Totens de autoatendimento" }],
+      }),
+    );
+
+    expect(html.match(/class="doc-page"/g)).toHaveLength(3);
+    expect(html).toContain('data-doc-catalog-page="0"');
+    expect(html).toContain("Página 1 de 3");
+    expect(html).toContain("Página 3 de 3");
+  });
+
+  it("divide o catálogo em páginas conforme o layout informado", () => {
+    const document = baseDocument({
+      modules: [
+        { title: "Controle de acesso" },
+        { title: "Emissão de credenciais" },
+        { title: "Relatórios" },
+        { title: "Painel de auditoria" },
+      ],
+      infrastructure: [{ title: "Totens de autoatendimento" }],
+    });
+
+    const html = renderToStaticMarkup(
+      <ProposalDocumentView
+        document={document}
+        layout={{ resourceCounts: [2, 2], infrastructurePage: 1 }}
+      />,
+    );
+
+    expect(html.match(/class="doc-page"/g)).toHaveLength(4);
+    expect(html).toContain('data-doc-catalog-page="0"');
+    expect(html).toContain('data-doc-catalog-page="1"');
+    expect(html).toContain("Página 1 de 4");
+    expect(html).toContain("Página 4 de 4");
+
+    const infrastructureIndex = html.indexOf(INFRASTRUCTURE_TITLE);
+    const lastResourceIndex = html.indexOf("Painel de auditoria");
+    expect(lastResourceIndex).toBeLessThan(infrastructureIndex);
+    expect(html.indexOf("Controle de acesso")).toBeLessThan(html.indexOf("Relatórios"));
+  });
 });

@@ -1,10 +1,33 @@
+import type { ReactNode } from "react";
+
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { ProposalDocument, ProposalDocumentItem } from "@/lib/proposal-document";
+import {
+  createDefaultDocumentLayout,
+  type ProposalDocumentLayout,
+} from "@/lib/proposal-document-layout";
 
 const BRAND_NAME = "Proposta.ai";
 
 function companyName(document: ProposalDocument): string {
   return document.settings.companyName?.trim() || BRAND_NAME;
+}
+
+/** Divide o catálogo de recursos conforme a distribuição de itens por página. */
+function splitCatalog(items: ProposalDocumentItem[], counts: number[]): ProposalDocumentItem[][] {
+  const chunks: ProposalDocumentItem[][] = [];
+  let offset = 0;
+
+  for (const count of counts.length > 0 ? counts : [items.length]) {
+    chunks.push(items.slice(offset, offset + count));
+    offset += count;
+  }
+
+  if (offset < items.length && chunks.length > 0) {
+    chunks[chunks.length - 1].push(...items.slice(offset));
+  }
+
+  return chunks;
 }
 
 function dateLabel(value: string | null | undefined): string {
@@ -153,13 +176,21 @@ function ItemList({ items }: { items: ProposalDocumentItem[] }) {
   );
 }
 
-function CatalogSection({ title, items }: { title: string; items: ProposalDocumentItem[] }) {
+function CatalogSection({
+  title,
+  items,
+  catalog,
+}: {
+  title: string;
+  items: ProposalDocumentItem[];
+  catalog: "resources" | "infrastructure";
+}) {
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <section className="doc-section">
+    <section className="doc-section" data-doc-catalog={catalog}>
       <h2 className="doc-section-title">{title}</h2>
       <ItemList items={items} />
     </section>
@@ -288,11 +319,12 @@ function PaymentSchedule({ document }: { document: ProposalDocument }) {
 export function ProposalDocumentView({
   document,
   includeFooter = true,
+  layout,
 }: {
   document: ProposalDocument;
   includeFooter?: boolean;
+  layout?: ProposalDocumentLayout;
 }) {
-  const totalPages = 3;
   const provider = {
     name: document.settings.responsible?.trim(),
     role: document.settings.responsibleRole?.trim(),
@@ -301,35 +333,61 @@ export function ProposalDocumentView({
     cnpj: document.settings.cnpj?.trim(),
   };
 
-  return (
-    <div>
-      {/* Página 1 — Apresentação e Recursos */}
-      <article className="doc-page">
-        <Header document={document} />
+  const activeLayout = layout ?? createDefaultDocumentLayout(document.modules.length);
+  const chunks = splitCatalog(document.modules, activeLayout.resourceCounts);
 
-        <div className="doc-hero">
-          <h1>{document.title || "Proposta Comercial"}</h1>
-          {document.subtitle && <p className="doc-subtitle">{document.subtitle}</p>}
-        </div>
+  const pages: { key: string; catalogPage?: number; content: ReactNode }[] = [];
 
-        <EventSummary document={document} />
-        <ClientBlock document={document} />
+  chunks.forEach((items, index) => {
+    const isFirst = index === 0;
+    pages.push({
+      key: `catalogo-${index}`,
+      catalogPage: index,
+      content: (
+        <>
+          <Header document={document} />
 
-        {document.solution && (
-          <section className="doc-section">
-            <h2 className="doc-section-title">Solução proposta</h2>
-            <p className="doc-text">{document.solution}</p>
-          </section>
-        )}
+          {isFirst && (
+            <>
+              <div className="doc-hero">
+                <h1>{document.title || "Proposta Comercial"}</h1>
+                {document.subtitle && <p className="doc-subtitle">{document.subtitle}</p>}
+              </div>
 
-        <CatalogSection title="Recursos do sistema de credenciamento" items={document.modules} />
-        <CatalogSection title="Infraestrutura e operação" items={document.infrastructure} />
+              <EventSummary document={document} />
+              <ClientBlock document={document} />
 
-        {includeFooter && <Footer document={document} pageNumber={1} totalPages={totalPages} />}
-      </article>
+              {document.solution && (
+                <section className="doc-section">
+                  <h2 className="doc-section-title">Solução proposta</h2>
+                  <p className="doc-text">{document.solution}</p>
+                </section>
+              )}
+            </>
+          )}
 
-      {/* Página 2 — Requisitos e Operação */}
-      <article className="doc-page">
+          <CatalogSection
+            title="Recursos do sistema de credenciamento"
+            items={items}
+            catalog="resources"
+          />
+
+          {index === activeLayout.infrastructurePage && (
+            <CatalogSection
+              title="Infraestrutura e operação"
+              items={document.infrastructure}
+              catalog="infrastructure"
+            />
+          )}
+        </>
+      ),
+    });
+  });
+
+  pages.push({
+    key: "operacao",
+    content: (
+      <>
         <Header document={document} />
 
         {document.requirements?.trim() && (
@@ -347,12 +405,14 @@ export function ProposalDocumentView({
             <div className="doc-note">{document.disclaimer}</div>
           </section>
         )}
+      </>
+    ),
+  });
 
-        {includeFooter && <Footer document={document} pageNumber={2} totalPages={totalPages} />}
-      </article>
-
-      {/* Página 3 — Valores, Aceite e Condições */}
-      <article className="doc-page">
+  pages.push({
+    key: "valores",
+    content: (
+      <>
         <Header document={document} />
 
         <FinancialTable document={document} />
@@ -380,9 +440,29 @@ export function ProposalDocumentView({
             <div className="doc-signature-role">Contratante — Data: ____/____/________</div>
           </div>
         </div>
+      </>
+    ),
+  });
 
-        {includeFooter && <Footer document={document} pageNumber={3} totalPages={totalPages} />}
-      </article>
+  const totalPages = pages.length;
+
+  return (
+    <div>
+      {pages.map((page, index) => (
+        <article
+          className="doc-page"
+          key={page.key}
+          {...(page.catalogPage === undefined
+            ? { "data-doc-page": page.key }
+            : { "data-doc-catalog-page": page.catalogPage })}
+        >
+          {page.content}
+
+          {includeFooter && (
+            <Footer document={document} pageNumber={index + 1} totalPages={totalPages} />
+          )}
+        </article>
+      ))}
     </div>
   );
 }
