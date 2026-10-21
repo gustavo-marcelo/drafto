@@ -137,6 +137,10 @@ ADMIN_NAME="Administrador"
 
 # Aponta o Puppeteer para o Chromium do sistema
 PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+
+# Acesso por HTTP na rede local (sem HTTPS): o cookie de sessão NÃO pode ser
+# marcado como "Secure", senão o navegador o descarta e o login não persiste.
+COOKIE_SECURE="false"
 ```
 
 Gere o segredo de sessão:
@@ -236,6 +240,11 @@ Se não existir, instale (`sudo apt-get install -y chromium-browser`) e ajuste
 
 **`Variáveis de ambiente inválidas: SESSION_SECRET ...`**
 O `SESSION_SECRET` precisa ter 32+ caracteres. Gere com `openssl rand -base64 32`.
+
+**Login funciona, mas qualquer link volta para `/login`**
+O cookie de sessão está marcado como `Secure` e o acesso é por HTTP. Defina
+`COOKIE_SECURE="false"` no `.env` e reinicie (`pm2 restart proposta`). Isso é
+seguro para a rede local; ao usar HTTPS (com proxy/domínio), remova essa linha.
 
 **Erro de conexão com o banco**
 Confirme que o Postgres está ativo (`sudo systemctl status postgresql`) e que o

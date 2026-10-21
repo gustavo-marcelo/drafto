@@ -7,12 +7,14 @@ import { cache } from "react";
 
 import { decrypt, encrypt, type SessionPayload } from "@/lib/session";
 import { SESSION_COOKIE } from "@/lib/session-cookie";
+import { getEnv } from "@/lib/env";
 
 export { SESSION_COOKIE };
 
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function createSession(userId: string): Promise<void> {
+  const env = getEnv();
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
   const payload: SessionPayload = { userId, expiresAt: expiresAt.toISOString() };
   const session = await encrypt(payload);
@@ -20,7 +22,7 @@ export async function createSession(userId: string): Promise<void> {
 
   cookieStore.set(SESSION_COOKIE, session, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: env.COOKIE_SECURE ?? env.NODE_ENV === "production",
     expires: expiresAt,
     sameSite: "lax",
     path: "/",

@@ -86,4 +86,37 @@ describe("getEnv", () => {
 
     expect(() => getEnv()).toThrow(/LOG_LEVEL/);
   });
+
+  it("trata strings vazias como ausentes (Sentry)", async () => {
+    env.DATABASE_URL = "postgresql://user:pass@localhost:5432/db";
+    env.SESSION_SECRET = "a".repeat(40);
+    env.SENTRY_DSN = "";
+    env.SENTRY_ENVIRONMENT = "";
+    env.SENTRY_TRACES_SAMPLE_RATE = "";
+    env.ADMIN_EMAIL = "";
+    env.ADMIN_PASSWORD = "";
+    const getEnv = await loadGetEnv();
+
+    const parsed = getEnv();
+
+    expect(parsed.SENTRY_DSN).toBeUndefined();
+    expect(parsed.SENTRY_ENVIRONMENT).toBeUndefined();
+    expect(parsed.SENTRY_TRACES_SAMPLE_RATE).toBeUndefined();
+    expect(parsed.ADMIN_EMAIL).toBeUndefined();
+    expect(parsed.ADMIN_PASSWORD).toBeUndefined();
+  });
+
+  it("interpreta COOKIE_SECURE", async () => {
+    env.DATABASE_URL = "postgresql://user:pass@localhost:5432/db";
+    env.SESSION_SECRET = "a".repeat(40);
+
+    env.COOKIE_SECURE = "false";
+    expect((await loadGetEnv())()).toMatchObject({ COOKIE_SECURE: false });
+
+    env.COOKIE_SECURE = "true";
+    expect((await loadGetEnv())()).toMatchObject({ COOKIE_SECURE: true });
+
+    env.COOKIE_SECURE = "";
+    expect((await loadGetEnv())()).toMatchObject({ COOKIE_SECURE: undefined });
+  });
 });

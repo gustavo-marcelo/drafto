@@ -41,6 +41,13 @@ const envSchema = z.object({
     emptyToUndefined,
     z.string().min(8, "ADMIN_PASSWORD deve ter ao menos 8 caracteres.").optional(),
   ),
+  COOKIE_SECURE: z.preprocess(
+    emptyToUndefined,
+    z
+      .enum(["true", "false"])
+      .transform((value) => value === "true")
+      .optional(),
+  ),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -60,6 +67,7 @@ export function getEnv(): Env {
     LOG_LEVEL: process.env.LOG_LEVEL,
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+    COOKIE_SECURE: process.env.COOKIE_SECURE,
   });
 
   if (!parsed.success) {
