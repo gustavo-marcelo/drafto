@@ -23,21 +23,37 @@ const MAX_ITERATIONS = 6;
 
 /**
  * Renderiza o documento e ajusta a paginação quando o conteúdo ultrapassa o
- * espaço disponível: a seção "Infraestrutura e operação" e os recursos extras
- * passam para a página seguinte em vez de serem cortados.
+ * espaço disponível: os blocos passam a ocupar quantas páginas forem
+ * necessárias, sem cortar seções pelo rodapé.
  */
 export function ProposalDocumentAutoLayout({
   document,
   includeFooter = true,
   onPageCountChange,
 }: ProposalDocumentAutoLayoutProps) {
-  const resourceCount = document.modules.length;
+  const countsKey = `${document.modules.length}:${document.schedule.length}`;
   const [layout, setLayout] = useState<ProposalDocumentLayout>(() =>
-    createDefaultDocumentLayout(resourceCount),
+    createDefaultDocumentLayout({
+      resourceCount: document.modules.length,
+      scheduleCount: document.schedule.length,
+    }),
   );
+  const [renderedCountsKey, setRenderedCountsKey] = useState(countsKey);
   const containerRef = useRef<HTMLDivElement>(null);
   const iterationsRef = useRef(0);
   const callbackRef = useRef(onPageCountChange);
+
+  // Quando a quantidade de recursos ou de marcos muda, o layout é refeito do
+  // zero para não manter contagens obsoletas (ajuste durante o render).
+  if (renderedCountsKey !== countsKey) {
+    setRenderedCountsKey(countsKey);
+    setLayout(
+      createDefaultDocumentLayout({
+        resourceCount: document.modules.length,
+        scheduleCount: document.schedule.length,
+      }),
+    );
+  }
 
   useEffect(() => {
     callbackRef.current = onPageCountChange;
@@ -49,11 +65,7 @@ export function ProposalDocumentAutoLayout({
       return;
     }
 
-    const distributed = layout.resourceCounts.reduce((total, count) => total + count, 0);
-    const next =
-      distributed === resourceCount
-        ? computeDocumentLayout(resourceCount, layout, container)
-        : createDefaultDocumentLayout(resourceCount);
+    const next = computeDocumentLayout(layout, container);
 
     if (!isSameDocumentLayout(next, layout)) {
       iterationsRef.current += 1;
@@ -65,7 +77,7 @@ export function ProposalDocumentAutoLayout({
 
     iterationsRef.current = 0;
     callbackRef.current?.(countDocumentPages(layout));
-  }, [document, layout, resourceCount]);
+  }, [document, layout]);
 
   return (
     <div ref={containerRef}>

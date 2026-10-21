@@ -8,130 +8,210 @@ import {
   type ProposalDocumentLayout,
 } from "./proposal-document-layout";
 
-function createFakePage(options: {
-  catalogPage?: number;
-  footerTop: number;
-  sections: { catalog?: "resources" | "infrastructure"; bottom: number }[];
-}) {
-  const page = {
-    getAttribute: (name: string) =>
-      name === "data-doc-catalog-page" && options.catalogPage !== undefined
-        ? String(options.catalogPage)
-        : null,
-    getBoundingClientRect: () => ({ top: 0, bottom: 1000 }) as DOMRect,
+type FakeBlock = {
+  kind: string;
+  top: number;
+  height: number;
+  itemHeights: number[];
+};
+
+function createBlock(
+  kind: string,
+  top: number,
+  height: number,
+  itemHeights: number[] = [],
+): FakeBlock {
+  return { kind, top, height, itemHeights };
+}
+
+function createPage(blocks: FakeBlock[], footerTop: number): Element {
+  const elements = blocks.map((block) => ({
+    getAttribute: (name: string) => (name === "data-doc-block" ? block.kind : null),
+    getBoundingClientRect: () =>
+      ({ top: block.top, bottom: block.top + block.height, height: block.height }) as DOMRect,
+    querySelectorAll: (selector: string) =>
+      selector === "[data-doc-item]"
+        ? block.itemHeights.map((height) => ({
+            getBoundingClientRect: () => ({ height }) as DOMRect,
+          }))
+        : [],
+  }));
+
+  return {
     querySelector: (selector: string) =>
       selector === ".doc-footer"
-        ? { getBoundingClientRect: () => ({ top: options.footerTop }) }
+        ? { getBoundingClientRect: () => ({ top: footerTop }) as DOMRect }
         : null,
-    querySelectorAll: (selector: string) => {
-      if (selector !== ".doc-section") {
-        return [];
-      }
-      return options.sections.map((section) => ({
-        getAttribute: (name: string) =>
-          name === "data-doc-catalog" ? (section.catalog ?? null) : null,
-        getBoundingClientRect: () => ({ top: 0, bottom: section.bottom }) as DOMRect,
-      }));
-    },
-  };
-
-  return page as unknown as Element;
+    querySelectorAll: (selector: string) => (selector === "[data-doc-block]" ? elements : []),
+    getBoundingClientRect: () => ({ top: 0, bottom: footerTop }) as DOMRect,
+  } as unknown as Element;
 }
 
 function createScope(pages: Element[]): ParentNode {
   return {
-    querySelectorAll: () => pages,
+    querySelectorAll: (selector: string) => (selector === ".doc-page" ? pages : []),
   } as unknown as ParentNode;
 }
 
 describe("proposal-document-layout", () => {
-  it("cria o layout padrão com todos os recursos na primeira página", () => {
-    const layout = createDefaultDocumentLayout(8);
+  it("cria o layout padrão com o fluxo de blocos", () => {
+    const layout = createDefaultDocumentLayout({ resourceCount: 8, scheduleCount: 3 });
 
-    expect(layout).toEqual({ resourceCounts: [8], infrastructurePage: 0 });
-    expect(countDocumentPages(layout)).toBe(3);
+    expect(layout.pages[0]).toEqual([
+      { kind: "intro" },
+      { kind: "resources", count: 8 },
+      { kind: "infrastructure" },
+      { kind: "requirements" },
+      { kind: "schedule", count: 3 },
+      { kind: "disclaimer" },
+    ]);
+    expect(layout.pages[1]).toEqual([{ kind: "values" }]);
+    expect(countDocumentPages(layout)).toBe(2);
   });
 
   it("compara layouts pelo conteúdo", () => {
-    const a = createDefaultDocumentLayout(4);
-    const b = createDefaultDocumentLayout(4);
+    const a = createDefaultDocumentLayout({ resourceCount: 4, scheduleCount: 0 });
+    const b = createDefaultDocumentLayout({ resourceCount: 4, scheduleCount: 0 });
 
     expect(isSameDocumentLayout(a, b)).toBe(true);
-    expect(isSameDocumentLayout(a, { resourceCounts: [2, 2], infrastructurePage: 0 })).toBe(false);
-    expect(isSameDocumentLayout(a, { resourceCounts: [4], infrastructurePage: 1 })).toBe(false);
+    expect(isSameDocumentLayout(a, { pages: [[{ kind: "values" }]] })).toBe(false);
+    expect(
+      isSameDocumentLayout(a, {
+        pages: [[{ kind: "intro" }, { kind: "resources", count: 2 }], [{ kind: "values" }]],
+      }),
+    ).toBe(false);
   });
 
-  it("mantém o layout quando não há overflow", () => {
-    const layout = createDefaultDocumentLayout(3);
+  it("mantém os blocos de operação na mesma página quando há espaço", () => {
+    const layout = createDefaultDocumentLayout({ resourceCount: 2, scheduleCount: 2 });
     const scope = createScope([
-      createFakePage({ catalogPage: 0, footerTop: 800, sections: [{ bottom: 700 }] }),
-    ]);
-
-    expect(computeDocumentLayout(3, layout, scope)).toEqual(layout);
-  });
-
-  it("move a infraestrutura para a página seguinte quando ela invade o rodapé", () => {
-    const layout = createDefaultDocumentLayout(3);
-    const scope = createScope([
-      createFakePage({
-        catalogPage: 0,
-        footerTop: 800,
-        sections: [
-          { catalog: "resources", bottom: 700 },
-          { catalog: "infrastructure", bottom: 860 },
+      createPage(
+        [
+          createBlock("intro", 100, 200),
+          createBlock("resources", 320, 100, [50, 50]),
+          createBlock("infrastructure", 440, 80),
+          createBlock("requirements", 540, 60),
+          createBlock("schedule", 620, 80, [40, 40]),
+          createBlock("disclaimer", 720, 60),
         ],
-      }),
+        800,
+      ),
+      createPage([createBlock("values", 100, 600)], 800),
     ]);
 
-    const next = computeDocumentLayout(3, layout, scope);
+    const next = computeDocumentLayout(layout, scope);
 
-    expect(next).toEqual({ resourceCounts: [3, 0], infrastructurePage: 1 });
-    expect(countDocumentPages(next)).toBe(4);
+    expect(next.pages).toHaveLength(2);
+    expect(next.pages[0]).toEqual([
+      { kind: "intro" },
+      { kind: "resources", count: 2 },
+      { kind: "infrastructure" },
+      { kind: "requirements" },
+      { kind: "schedule", count: 2 },
+      { kind: "disclaimer" },
+    ]);
+    expect(next.pages[1]).toEqual([{ kind: "values" }]);
   });
 
-  it("separa a infraestrutura quando ela não cabe na primeira página do catálogo", () => {
-    const layout = createDefaultDocumentLayout(6);
+  it("divide os recursos quando não cabem na página", () => {
+    const layout = createDefaultDocumentLayout({ resourceCount: 8, scheduleCount: 0 });
     const scope = createScope([
-      createFakePage({
-        catalogPage: 0,
-        footerTop: 800,
-        sections: [
-          { catalog: "resources", bottom: 700 },
-          { catalog: "infrastructure", bottom: 860 },
+      createPage(
+        [
+          createBlock("intro", 100, 200),
+          createBlock("resources", 320, 600, [150, 150, 150, 150, 150, 150, 150, 150]),
         ],
-      }),
+        800,
+      ),
+      createPage([createBlock("values", 100, 600)], 800),
     ]);
 
-    const next = computeDocumentLayout(6, layout, scope);
+    const next = computeDocumentLayout(layout, scope);
 
-    expect(next.resourceCounts.reduce((total, count) => total + count, 0)).toBe(6);
-    expect(next.resourceCounts.length).toBeGreaterThan(1);
-    expect(next.infrastructurePage).toBe(next.resourceCounts.length - 1);
-    expect(countDocumentPages(next)).toBe(next.resourceCounts.length + 2);
+    const resourceBlocks = next.pages.flat().filter((block) => block.kind === "resources");
+    expect(resourceBlocks.length).toBeGreaterThan(1);
+    expect(resourceBlocks.reduce((total, block) => total + (block.count ?? 0), 0)).toBe(8);
+    expect(next.pages[next.pages.length - 1]).toEqual([{ kind: "values" }]);
   });
 
-  it("divide os recursos entre as páginas quando a lista invade o rodapé", () => {
-    const layout = createDefaultDocumentLayout(8);
+  it("mantém a página de valores sempre no início de uma página", () => {
+    const layout = createDefaultDocumentLayout({ resourceCount: 1, scheduleCount: 0 });
     const scope = createScope([
-      createFakePage({
-        catalogPage: 0,
-        footerTop: 800,
-        sections: [{ catalog: "resources", bottom: 900 }],
-      }),
+      createPage(
+        [
+          createBlock("intro", 100, 200),
+          createBlock("resources", 320, 100, [50]),
+          createBlock("infrastructure", 440, 80),
+          createBlock("values", 540, 300),
+        ],
+        800,
+      ),
     ]);
 
-    const next = computeDocumentLayout(8, layout, scope);
+    const next = computeDocumentLayout(layout, scope);
 
-    expect(next.resourceCounts.reduce((total, count) => total + count, 0)).toBe(8);
-    expect(next.resourceCounts.length).toBe(2);
-    expect(next.resourceCounts[0]).toBeLessThan(8);
-    expect(next.infrastructurePage).toBe(1);
+    expect(next.pages[next.pages.length - 1]).toEqual([{ kind: "values" }]);
+    expect(next.pages.flat().filter((block) => block.kind === "values")).toHaveLength(1);
   });
 
-  it("ignora overflow fora do catálogo", () => {
-    const layout: ProposalDocumentLayout = { resourceCounts: [3], infrastructurePage: 0 };
-    const scope = createScope([createFakePage({ footerTop: 800, sections: [{ bottom: 900 }] })]);
+  it("mantém o layout quando não há blocos medidos", () => {
+    const layout: ProposalDocumentLayout = { pages: [[{ kind: "values" }]] };
+    const scope = createScope([]);
 
-    expect(computeDocumentLayout(3, layout, scope)).toEqual(layout);
+    expect(computeDocumentLayout(layout, scope)).toBe(layout);
+  });
+
+  it("preserva blocos sem conteúdo no layout", () => {
+    const layout = createDefaultDocumentLayout({ resourceCount: 2, scheduleCount: 2 });
+    const scope = createScope([
+      createPage(
+        [
+          createBlock("intro", 100, 200),
+          createBlock("resources", 320, 100, [50, 50]),
+          // A infraestrutura vazia não é renderizada, mas continua no layout.
+          createBlock("schedule", 440, 80, [40, 40]),
+        ],
+        800,
+      ),
+      createPage([createBlock("values", 100, 600)], 800),
+    ]);
+
+    const next = computeDocumentLayout(layout, scope);
+
+    expect(next.pages[0]).toEqual([
+      { kind: "intro" },
+      { kind: "resources", count: 2 },
+      { kind: "infrastructure" },
+      { kind: "requirements" },
+      { kind: "schedule", count: 2 },
+      { kind: "disclaimer" },
+    ]);
+  });
+
+  it("desconta o título do bloco ao dividir os recursos", () => {
+    const layout = createDefaultDocumentLayout({ resourceCount: 8, scheduleCount: 0 });
+    const scope = createScope([
+      createPage(
+        [
+          createBlock("intro", 100, 200),
+          // 8 itens de 100px em duas colunas (4 linhas = 400px) e 100px de título.
+          createBlock("resources", 320, 500, [100, 100, 100, 100, 100, 100, 100, 100]),
+        ],
+        800,
+      ),
+      createPage([createBlock("values", 100, 600)], 800),
+    ]);
+
+    const next = computeDocumentLayout(layout, scope);
+
+    expect(next.pages[0]).toEqual([{ kind: "intro" }, { kind: "resources", count: 6 }]);
+    expect(next.pages[1]).toEqual([
+      { kind: "resources", count: 2 },
+      { kind: "infrastructure" },
+      { kind: "requirements" },
+      { kind: "schedule", count: 0 },
+      { kind: "disclaimer" },
+    ]);
+    expect(next.pages[next.pages.length - 1]).toEqual([{ kind: "values" }]);
   });
 });

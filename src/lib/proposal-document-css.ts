@@ -33,6 +33,10 @@ export const PROPOSAL_DOCUMENT_CSS = `
     overflow: hidden;
   }
 
+  /* O conteúdo excedente deve transbordar (e ser cortado) em vez de encolher:
+     assim a medição de overflow no browser continua válida. */
+  .doc-page > * { flex-shrink: 0; }
+
   .doc-page + .doc-page { margin-top: 8mm; }
 
   @media print {

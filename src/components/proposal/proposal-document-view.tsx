@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { ProposalDocument, ProposalDocumentItem } from "@/lib/proposal-document";
 import {
+  countDocumentPages,
   createDefaultDocumentLayout,
   type ProposalDocumentLayout,
 } from "@/lib/proposal-document-layout";
@@ -11,23 +12,6 @@ const BRAND_NAME = "Proposta.ai";
 
 function companyName(document: ProposalDocument): string {
   return document.settings.companyName?.trim() || BRAND_NAME;
-}
-
-/** Divide o catálogo de recursos conforme a distribuição de itens por página. */
-function splitCatalog(items: ProposalDocumentItem[], counts: number[]): ProposalDocumentItem[][] {
-  const chunks: ProposalDocumentItem[][] = [];
-  let offset = 0;
-
-  for (const count of counts.length > 0 ? counts : [items.length]) {
-    chunks.push(items.slice(offset, offset + count));
-    offset += count;
-  }
-
-  if (offset < items.length && chunks.length > 0) {
-    chunks[chunks.length - 1].push(...items.slice(offset));
-  }
-
-  return chunks;
 }
 
 function dateLabel(value: string | null | undefined): string {
@@ -156,11 +140,11 @@ function ClientBlock({ document }: { document: ProposalDocument }) {
   );
 }
 
-function ItemList({ items }: { items: ProposalDocumentItem[] }) {
+function ItemList({ items, kind }: { items: ProposalDocumentItem[]; kind: string }) {
   return (
     <ul className="doc-list">
       {items.map((item, index) => (
-        <li key={`${item.title}-${index}`}>
+        <li key={`${item.title}-${index}`} data-doc-item={kind}>
           <span>
             <span className="doc-item-title">{item.title}</span>
             {item.description && (
@@ -179,34 +163,35 @@ function ItemList({ items }: { items: ProposalDocumentItem[] }) {
 function CatalogSection({
   title,
   items,
-  catalog,
+  block,
 }: {
   title: string;
   items: ProposalDocumentItem[];
-  catalog: "resources" | "infrastructure";
+  block: "resources" | "infrastructure";
 }) {
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <section className="doc-section" data-doc-catalog={catalog}>
+    <section className="doc-section" data-doc-block={block} data-doc-block-count={items.length}>
       <h2 className="doc-section-title">{title}</h2>
-      <ItemList items={items} />
+      <ItemList items={items} kind={block} />
     </section>
   );
 }
 
-function ScheduleList({ document }: { document: ProposalDocument }) {
-  if (document.schedule.length === 0) {
+function ScheduleList({ items }: { items: ProposalDocument["schedule"] }) {
+  if (items.length === 0) {
     return null;
   }
+
   return (
-    <section className="doc-section">
+    <section className="doc-section" data-doc-block="schedule" data-doc-block-count={items.length}>
       <h2 className="doc-section-title">Cronograma Operacional</h2>
       <div>
-        {document.schedule.map((item, index) => (
-          <div className="doc-schedule-row" key={`${item.date}-${index}`}>
+        {items.map((item, index) => (
+          <div className="doc-schedule-row" key={`${item.date}-${index}`} data-doc-item="schedule">
             <div className="doc-schedule-date">{item.date}</div>
             <div>
               <div className="doc-item-title">{item.title}</div>
@@ -316,6 +301,179 @@ function PaymentSchedule({ document }: { document: ProposalDocument }) {
   );
 }
 
+function IntroBlock({ document }: { document: ProposalDocument }) {
+  return (
+    <div className="doc-block" data-doc-block="intro">
+      <div className="doc-hero">
+        <h1>{document.title || "Proposta Comercial"}</h1>
+        {document.subtitle && <p className="doc-subtitle">{document.subtitle}</p>}
+      </div>
+
+      <EventSummary document={document} />
+      <ClientBlock document={document} />
+
+      {document.solution && (
+        <section className="doc-section">
+          <h2 className="doc-section-title">Solução proposta</h2>
+          <p className="doc-text">{document.solution}</p>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function RequirementsBlock({ document }: { document: ProposalDocument }) {
+  if (!document.requirements?.trim()) {
+    return null;
+  }
+
+  return (
+    <section className="doc-section" data-doc-block="requirements">
+      <h2 className="doc-section-title">Requisitos pré-evento</h2>
+      <p className="doc-text">{document.requirements}</p>
+    </section>
+  );
+}
+
+function DisclaimerBlock({ document }: { document: ProposalDocument }) {
+  if (!document.disclaimer?.trim()) {
+    return null;
+  }
+
+  return (
+    <section className="doc-section" data-doc-block="disclaimer">
+      <h2 className="doc-section-title">Compromissos e avisos contratuais</h2>
+      <div className="doc-note">{document.disclaimer}</div>
+    </section>
+  );
+}
+
+function ValuesBlock({ document }: { document: ProposalDocument }) {
+  const provider = {
+    name: document.settings.responsible?.trim(),
+    role: document.settings.responsibleRole?.trim(),
+    phone: document.settings.phone?.trim(),
+    email: document.settings.email?.trim(),
+    cnpj: document.settings.cnpj?.trim(),
+  };
+
+  return (
+    <div className="doc-block" data-doc-block="values">
+      <FinancialTable document={document} />
+      <ValueItemsTable document={document} />
+      <PaymentSchedule document={document} />
+
+      {document.acceptanceNote && (
+        <section className="doc-section">
+          <h2 className="doc-section-title">Aceite do contratante</h2>
+          <p className="doc-text">{document.acceptanceNote}</p>
+        </section>
+      )}
+
+      <div className="doc-signature">
+        <div className="doc-signature-line">
+          <div className="doc-signature-name">{companyName(document)}</div>
+          {provider.name && <div className="doc-signature-role">{provider.name}</div>}
+          <div className="doc-signature-role">{provider.role || "Contratada"}</div>
+          {provider.phone && <div className="doc-signature-role">{provider.phone}</div>}
+          {provider.email && <div className="doc-signature-role">{provider.email}</div>}
+          {provider.cnpj && <div className="doc-signature-role">{provider.cnpj}</div>}
+        </div>
+        <div className="doc-signature-line">
+          <div className="doc-signature-name">{document.client?.name || "Contratante"}</div>
+          <div className="doc-signature-role">Contratante — Data: ____/____/________</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type ResolvedBlock = { key: string; content: ReactNode };
+
+/**
+ * Resolve os blocos do layout em conteúdo, distribuindo os itens de recursos e
+ * do cronograma na ordem de leitura do documento.
+ */
+function resolveLayout(
+  layout: ProposalDocumentLayout,
+  document: ProposalDocument,
+): ResolvedBlock[][] {
+  const pages: ResolvedBlock[][] = [];
+  let resourceOffset = 0;
+  let scheduleOffset = 0;
+
+  for (const blocks of layout.pages) {
+    const resolved: ResolvedBlock[] = [];
+
+    for (const block of blocks) {
+      switch (block.kind) {
+        case "intro": {
+          resolved.push({ key: "intro", content: <IntroBlock document={document} /> });
+          break;
+        }
+        case "resources": {
+          const count = block.count ?? 0;
+          const items = document.modules.slice(resourceOffset, resourceOffset + count);
+          resourceOffset += count;
+          resolved.push({
+            key: `resources-${resourceOffset}`,
+            content: (
+              <CatalogSection
+                title="Recursos do sistema de credenciamento"
+                items={items}
+                block="resources"
+              />
+            ),
+          });
+          break;
+        }
+        case "infrastructure": {
+          resolved.push({
+            key: "infrastructure",
+            content: (
+              <CatalogSection
+                title="Infraestrutura e operação"
+                items={document.infrastructure}
+                block="infrastructure"
+              />
+            ),
+          });
+          break;
+        }
+        case "requirements": {
+          resolved.push({
+            key: "requirements",
+            content: <RequirementsBlock document={document} />,
+          });
+          break;
+        }
+        case "schedule": {
+          const count = block.count ?? 0;
+          const items = document.schedule.slice(scheduleOffset, scheduleOffset + count);
+          scheduleOffset += count;
+          resolved.push({
+            key: `schedule-${scheduleOffset}`,
+            content: <ScheduleList items={items} />,
+          });
+          break;
+        }
+        case "disclaimer": {
+          resolved.push({ key: "disclaimer", content: <DisclaimerBlock document={document} /> });
+          break;
+        }
+        case "values": {
+          resolved.push({ key: "values", content: <ValuesBlock document={document} /> });
+          break;
+        }
+      }
+    }
+
+    pages.push(resolved);
+  }
+
+  return pages;
+}
+
 export function ProposalDocumentView({
   document,
   includeFooter = true,
@@ -325,141 +483,28 @@ export function ProposalDocumentView({
   includeFooter?: boolean;
   layout?: ProposalDocumentLayout;
 }) {
-  const provider = {
-    name: document.settings.responsible?.trim(),
-    role: document.settings.responsibleRole?.trim(),
-    phone: document.settings.phone?.trim(),
-    email: document.settings.email?.trim(),
-    cnpj: document.settings.cnpj?.trim(),
-  };
-
-  const activeLayout = layout ?? createDefaultDocumentLayout(document.modules.length);
-  const chunks = splitCatalog(document.modules, activeLayout.resourceCounts);
-
-  const pages: { key: string; catalogPage?: number; content: ReactNode }[] = [];
-
-  chunks.forEach((items, index) => {
-    const isFirst = index === 0;
-    pages.push({
-      key: `catalogo-${index}`,
-      catalogPage: index,
-      content: (
-        <>
-          <Header document={document} />
-
-          {isFirst && (
-            <>
-              <div className="doc-hero">
-                <h1>{document.title || "Proposta Comercial"}</h1>
-                {document.subtitle && <p className="doc-subtitle">{document.subtitle}</p>}
-              </div>
-
-              <EventSummary document={document} />
-              <ClientBlock document={document} />
-
-              {document.solution && (
-                <section className="doc-section">
-                  <h2 className="doc-section-title">Solução proposta</h2>
-                  <p className="doc-text">{document.solution}</p>
-                </section>
-              )}
-            </>
-          )}
-
-          <CatalogSection
-            title="Recursos do sistema de credenciamento"
-            items={items}
-            catalog="resources"
-          />
-
-          {index === activeLayout.infrastructurePage && (
-            <CatalogSection
-              title="Infraestrutura e operação"
-              items={document.infrastructure}
-              catalog="infrastructure"
-            />
-          )}
-        </>
-      ),
+  const activeLayout =
+    layout ??
+    createDefaultDocumentLayout({
+      resourceCount: document.modules.length,
+      scheduleCount: document.schedule.length,
     });
-  });
 
-  pages.push({
-    key: "operacao",
-    content: (
-      <>
-        <Header document={document} />
-
-        {document.requirements?.trim() && (
-          <section className="doc-section">
-            <h2 className="doc-section-title">Requisitos pré-evento</h2>
-            <p className="doc-text">{document.requirements}</p>
-          </section>
-        )}
-
-        <ScheduleList document={document} />
-
-        {document.disclaimer?.trim() && (
-          <section className="doc-section">
-            <h2 className="doc-section-title">Compromissos e avisos contratuais</h2>
-            <div className="doc-note">{document.disclaimer}</div>
-          </section>
-        )}
-      </>
-    ),
-  });
-
-  pages.push({
-    key: "valores",
-    content: (
-      <>
-        <Header document={document} />
-
-        <FinancialTable document={document} />
-        <ValueItemsTable document={document} />
-        <PaymentSchedule document={document} />
-
-        {document.acceptanceNote && (
-          <section className="doc-section">
-            <h2 className="doc-section-title">Aceite do contratante</h2>
-            <p className="doc-text">{document.acceptanceNote}</p>
-          </section>
-        )}
-
-        <div className="doc-signature">
-          <div className="doc-signature-line">
-            <div className="doc-signature-name">{companyName(document)}</div>
-            {provider.name && <div className="doc-signature-role">{provider.name}</div>}
-            <div className="doc-signature-role">{provider.role || "Contratada"}</div>
-            {provider.phone && <div className="doc-signature-role">{provider.phone}</div>}
-            {provider.email && <div className="doc-signature-role">{provider.email}</div>}
-            {provider.cnpj && <div className="doc-signature-role">{provider.cnpj}</div>}
-          </div>
-          <div className="doc-signature-line">
-            <div className="doc-signature-name">{document.client?.name || "Contratante"}</div>
-            <div className="doc-signature-role">Contratante — Data: ____/____/________</div>
-          </div>
-        </div>
-      </>
-    ),
-  });
-
-  const totalPages = pages.length;
+  const totalPages = countDocumentPages(activeLayout);
+  const pages = resolveLayout(activeLayout, document);
 
   return (
     <div>
-      {pages.map((page, index) => (
-        <article
-          className="doc-page"
-          key={page.key}
-          {...(page.catalogPage === undefined
-            ? { "data-doc-page": page.key }
-            : { "data-doc-catalog-page": page.catalogPage })}
-        >
-          {page.content}
+      {pages.map((blocks, pageIndex) => (
+        <article className="doc-page" key={pageIndex} data-doc-page={pageIndex}>
+          <Header document={document} />
+
+          {blocks.map((block) => (
+            <React.Fragment key={block.key}>{block.content}</React.Fragment>
+          ))}
 
           {includeFooter && (
-            <Footer document={document} pageNumber={index + 1} totalPages={totalPages} />
+            <Footer document={document} pageNumber={pageIndex + 1} totalPages={totalPages} />
           )}
         </article>
       ))}

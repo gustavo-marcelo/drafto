@@ -129,7 +129,7 @@ describe("ProposalDocumentView", () => {
     expect(html).toContain("Investimento");
   });
 
-  it("mantém três páginas quando o catálogo cabe em uma", () => {
+  it("usa o layout padrão com o fluxo em uma página e os valores na seguinte", () => {
     const html = render(
       baseDocument({
         modules: [{ title: "Controle de acesso" }],
@@ -137,10 +137,41 @@ describe("ProposalDocumentView", () => {
       }),
     );
 
-    expect(html.match(/class="doc-page"/g)).toHaveLength(3);
-    expect(html).toContain('data-doc-catalog-page="0"');
-    expect(html).toContain("Página 1 de 3");
-    expect(html).toContain("Página 3 de 3");
+    expect(html.match(/class="doc-page"/g)).toHaveLength(2);
+    expect(html).toContain('data-doc-page="0"');
+    expect(html).toContain("Página 1 de 2");
+    expect(html).toContain("Página 2 de 2");
+  });
+
+  it("mantém os itens de operação em sequência na mesma página", () => {
+    const html = render(
+      baseDocument({
+        modules: [{ title: "Controle de acesso" }],
+        infrastructure: [{ title: "Totens de autoatendimento" }],
+        requirements: "Requisitos do evento",
+        schedule: [{ date: "01/11/2026", title: "Marco 1", description: null }],
+        disclaimer: "Avisos contratuais",
+      }),
+    );
+
+    expect(html).toContain('data-doc-block="requirements"');
+    expect(html).toContain('data-doc-block="schedule"');
+    expect(html).toContain('data-doc-block="disclaimer"');
+    expect(html.indexOf("Requisitos pré-evento")).toBeLessThan(
+      html.indexOf("Cronograma Operacional"),
+    );
+    expect(html.indexOf("Cronograma Operacional")).toBeLessThan(
+      html.indexOf("Compromissos e avisos contratuais"),
+    );
+  });
+
+  it("inicia a página de valores com as condições comerciais", () => {
+    const html = render(baseDocument({ valueItems: [] }));
+
+    const valuesIndex = html.indexOf('data-doc-block="values"');
+    expect(valuesIndex).toBeGreaterThan(-1);
+    expect(html.indexOf("Condições comerciais")).toBeGreaterThan(valuesIndex);
+    expect(html.indexOf("Composição do valor")).toBe(-1);
   });
 
   it("divide o catálogo em páginas conforme o layout informado", () => {
@@ -157,15 +188,22 @@ describe("ProposalDocumentView", () => {
     const html = renderToStaticMarkup(
       <ProposalDocumentView
         document={document}
-        layout={{ resourceCounts: [2, 2], infrastructurePage: 1 }}
+        layout={{
+          pages: [
+            [{ kind: "intro" }, { kind: "resources", count: 2 }],
+            [{ kind: "resources", count: 2 }, { kind: "infrastructure" }],
+            [{ kind: "values" }],
+          ],
+        }}
       />,
     );
 
-    expect(html.match(/class="doc-page"/g)).toHaveLength(4);
-    expect(html).toContain('data-doc-catalog-page="0"');
-    expect(html).toContain('data-doc-catalog-page="1"');
-    expect(html).toContain("Página 1 de 4");
-    expect(html).toContain("Página 4 de 4");
+    expect(html.match(/class="doc-page"/g)).toHaveLength(3);
+    expect(html).toContain('data-doc-page="0"');
+    expect(html).toContain('data-doc-page="1"');
+    expect(html).toContain('data-doc-page="2"');
+    expect(html).toContain("Página 1 de 3");
+    expect(html).toContain("Página 3 de 3");
 
     const infrastructureIndex = html.indexOf(INFRASTRUCTURE_TITLE);
     const lastResourceIndex = html.indexOf("Painel de auditoria");

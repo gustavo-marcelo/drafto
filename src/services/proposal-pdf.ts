@@ -44,7 +44,10 @@ export async function renderProposalPdf(document: ProposalDocument): Promise<Buf
 
   try {
     const page = await browser.newPage();
-    let layout = createDefaultDocumentLayout(document.modules.length);
+    let layout = createDefaultDocumentLayout({
+      resourceCount: document.modules.length,
+      scheduleCount: document.schedule.length,
+    });
 
     // Mede o documento renderizado e refaz o layout enquanto houver conteúdo
     // fora da área imprimível (seções cortadas no rodapé da página).
@@ -52,7 +55,7 @@ export async function renderProposalPdf(document: ProposalDocument): Promise<Buf
       await page.setContent(await buildHtml(document, layout), { waitUntil: "load" });
       await page.emulateMediaType("print");
 
-      const next = await page.evaluate(computeDocumentLayout, document.modules.length, layout);
+      const next = await page.evaluate(computeDocumentLayout, layout);
 
       if (isSameDocumentLayout(next, layout)) {
         break;
