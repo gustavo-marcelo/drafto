@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { verifySession } from "@/lib/auth";
+import { generateShareId } from "@/lib/codes";
 import { captureServerError } from "@/lib/observability";
 import { prisma } from "@/lib/prisma";
 import { canTransition, STATUS_LABELS } from "@/lib/proposal-status";
@@ -72,6 +73,7 @@ export async function duplicateProposal(id: string): Promise<void> {
   const copy = await prisma.proposal.create({
     data: {
       code: await generateUniqueCode("PR"),
+      shareId: generateShareId(),
       title: `${original.title} (cópia)`,
       subtitle: original.subtitle,
       eventDate: original.eventDate,

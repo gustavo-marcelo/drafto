@@ -61,6 +61,27 @@ test.describe("Criar proposta (fluxo crítico)", () => {
   });
 });
 
+test.describe("Duplicar proposta", () => {
+  test("a cópia mantém as ações de link público", async ({ authedPage: page }) => {
+    await page.goto("/dashboard");
+
+    const row = page.locator("tbody tr", { hasText: SEED_PROPOSAL_CODE });
+    await row.getByRole("button", { name: "Duplicar" }).click();
+
+    await expect(page).toHaveURL(/\/dashboard\/propostas\/(?!seed-proposal-1)[^/]+$/, {
+      timeout: 20_000,
+    });
+    await expect(page.getByRole("link", { name: "Abrir link público" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Copiar link" })).toBeVisible();
+
+    const copyId = page.url().split("/").pop() as string;
+    const copy = await prisma.proposal.findUnique({ where: { id: copyId } });
+    expect(copy?.shareId, "a cópia deve ter shareId").toBeTruthy();
+
+    await prisma.proposal.delete({ where: { id: copyId } });
+  });
+});
+
 test.describe("PDF da proposta seed", () => {
   test("a proposta seed tem código e link público válidos", async ({ authedPage: page }) => {
     await expect(page.locator("table")).toContainText(SEED_PROPOSAL_CODE);

@@ -49,6 +49,7 @@ npx prisma migrate deploy   # aplica migrations pendentes (produção)
 npx prisma generate         # gera o client
 npm run db:seed             # usuário inicial + catálogo + proposta demo
 npm run db:expire           # expira propostas vencidas (agendar via cron)
+npm run db:share-ids        # gera link público para propostas que ainda não têm shareId
 ```
 
 ## 3. Docker (app + banco)

@@ -21,6 +21,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:expire": "node scripts/expire-proposals.mjs",
+    "db:share-ids": "node scripts/ensure-share-ids.mjs",
     "analyze": "next build --analyze",
     "analyze:view": "next analyze",
     "prepare": "husky"
