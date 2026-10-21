@@ -172,14 +172,14 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 Durante as Fases 1–3 foram acrescentados itens não previstos, já integrados:
 
-| Item                            | Descrição                                                                                                                                        |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Códigos de entidade**         | `Client.clientCode` (`CL####.####`) e `Proposal.code` (`PR####.####`) únicos, com geração automática (`services/codes.ts`) e exibição nas telas. |
-| **Contato do cliente ampliado** | Campos `phone` (formatação BR) e `email` (validado) no cliente, com busca e seed.                                                                |
-| **Troca de paleta de cores**    | Primary `#123B36` (verde-petróleo) + accent `#C7A66B` (dourado), escalas 50–950 regeradas em OKLCH e contraste AA/AAA revalidado.                |
-| **Recurso (`Resource`)**        | Modelo/tela de "Recursos" adicionado (`dashboard/recursos/*`) além do previsto.                                                                  |
-| **Textos pré-definidos**        | `TextPreset` (solução/requisitos/aceite/custos) com CRUD e inserção nos campos do wizard.                                                        |
-| **Edição por etapas**           | Cabeçalho com etapas 1–4 clicáveis (validação ao pular), salvar com toasts e machine de status ampliada (`COMPLETED`/`CANCELLED`, "Aceita").     |
+| Item                            | Descrição                                                                                                                                                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Códigos de entidade**         | `Client.clientCode` (`CL####.####`) e `Proposal.code` (`PR####.####`) únicos, com geração automática (`services/codes.ts`) e exibição nas telas.                                                                          |
+| **Contato do cliente ampliado** | Campos `phone` (formatação BR) e `email` (validado) no cliente, com busca e seed.                                                                                                                                         |
+| **Troca de paleta de cores**    | Primary `#123B36` (verde-petróleo) + accent `#C7A66B` (dourado), escalas 50–950 regeradas em OKLCH e contraste AA/AAA revalidado.                                                                                         |
+| **Recurso (`Resource`)**        | Modelo/tela de "Recursos" adicionado (`dashboard/recursos/*`) além do previsto.                                                                                                                                           |
+| **Textos pré-definidos**        | `TextPreset` (solução/requisitos/aceite/custos) com CRUD e inserção nos campos do wizard.                                                                                                                                 |
+| **Edição por etapas**           | Cabeçalho com etapas 1–4 clicáveis (validação ao pular), salvar com toasts e machine de status ampliada (`COMPLETED`/`CANCELLED`, "Aceita").                                                                              |
 | **Gestão de usuários**          | Cadastro público removido (rota `/register` eliminada). Novos usuários são criados por usuários logados em `dashboard/usuarios` (`instant = false`); usuário inicial criado pelo seed via `ADMIN_EMAIL`/`ADMIN_PASSWORD`. |
 
 ---

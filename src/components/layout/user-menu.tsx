@@ -36,11 +36,7 @@ export function UserMenu({ name, email }: { name: string | null; email: string }
 
       {open && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
           <div
             role="menu"
             className="border-primary-100 absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-lg border bg-white shadow-lg"
