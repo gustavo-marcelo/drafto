@@ -173,9 +173,7 @@ export const PROPOSAL_DOCUMENT_CSS = `
     column-gap: 6mm;
   }
   .doc-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 2.5mm;
+    display: block;
     padding: 1.8mm 0;
     border-bottom: 1px solid var(--doc-line);
     font-size: 9.5pt;
@@ -184,21 +182,6 @@ export const PROPOSAL_DOCUMENT_CSS = `
     page-break-inside: avoid;
   }
   .doc-list li:last-child { border-bottom: none; }
-
-  .doc-check {
-    flex: none;
-    width: 3.5mm;
-    height: 3.5mm;
-    margin-top: 0.6mm;
-    border-radius: 50%;
-    background: var(--doc-accent);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 7pt;
-    font-weight: 700;
-  }
 
   .doc-item-title { font-weight: 600; color: var(--doc-primary-700); }
   .doc-item-desc { color: var(--doc-muted); font-size: 8.5pt; }

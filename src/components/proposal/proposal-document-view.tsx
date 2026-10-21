@@ -142,7 +142,6 @@ function ItemList({ items }: { items: ProposalDocumentItem[] }) {
     <ul className="doc-list">
       {items.map((item, index) => (
         <li key={`${item.title}-${index}`}>
-          <span className="doc-check">✓</span>
           <span>
             <span className="doc-item-title">{item.title}</span>
             {item.description && (
