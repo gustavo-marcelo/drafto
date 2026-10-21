@@ -175,13 +175,11 @@ export const PROPOSAL_DOCUMENT_CSS = `
   .doc-list li {
     display: block;
     padding: 1.8mm 0;
-    border-bottom: 1px solid var(--doc-line);
     font-size: 9.5pt;
     line-height: 1.4;
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .doc-list li:last-child { border-bottom: none; }
 
   .doc-item-title { font-weight: 600; color: var(--doc-primary-700); }
   .doc-item-desc { color: var(--doc-muted); font-size: 8.5pt; }
