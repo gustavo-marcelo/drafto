@@ -103,4 +103,29 @@ describe("ProposalDocumentView", () => {
 
     expect(html).not.toContain("Composição do valor");
   });
+
+  it("mostra a composição do valor depois das condições comerciais", () => {
+    const html = render(
+      baseDocument({
+        valueItems: [
+          { description: "Licença do sistema", quantity: 1, unitValue: 12000, subtotal: 12000 },
+        ],
+      }),
+    );
+
+    expect(html.indexOf("Condições comerciais")).toBeLessThan(html.indexOf("Composição do valor"));
+  });
+
+  it("não repete o valor total nas condições comerciais e rotula o total da composição", () => {
+    const html = render(
+      baseDocument({
+        valueItems: [
+          { description: "Licença do sistema", quantity: 1, unitValue: 12000, subtotal: 12000 },
+        ],
+      }),
+    );
+
+    expect(html).not.toContain("Valor total");
+    expect(html).toContain("Investimento");
+  });
 });

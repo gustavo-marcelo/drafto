@@ -11,10 +11,6 @@ function dateLabel(value: string | null | undefined): string {
   return value ? formatDate(value) : "—";
 }
 
-function amountLabel(value: number | null | undefined): string {
-  return value === null || value === undefined ? "—" : formatCurrency(value);
-}
-
 function Header({ document }: { document: ProposalDocument }) {
   const logo = document.settings.logo;
   const tagline = document.settings.tagline?.trim();
@@ -221,7 +217,7 @@ function ValueItemsTable({ document }: { document: ProposalDocument }) {
             </tr>
           ))}
           <tr className="doc-total">
-            <td>Total</td>
+            <td>Investimento</td>
             <td />
             <td />
             <td className="doc-amount">{formatCurrency(total)}</td>
@@ -253,10 +249,6 @@ function FinancialTable({ document }: { document: ProposalDocument }) {
           <tr>
             <td>Custos incluídos</td>
             <td className="doc-amount">{document.includedCosts || "—"}</td>
-          </tr>
-          <tr className="doc-total">
-            <td>Valor total</td>
-            <td className="doc-amount">{amountLabel(document.totalAmount)}</td>
           </tr>
         </tbody>
       </table>
@@ -363,8 +355,8 @@ export function ProposalDocumentView({
       <article className="doc-page">
         <Header document={document} />
 
-        <ValueItemsTable document={document} />
         <FinancialTable document={document} />
+        <ValueItemsTable document={document} />
         <PaymentSchedule document={document} />
 
         {document.acceptanceNote && (
