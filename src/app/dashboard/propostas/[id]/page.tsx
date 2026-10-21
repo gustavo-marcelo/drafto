@@ -41,6 +41,14 @@ export default async function ProposalDetailPage({ params }: { params: Params })
     acceptanceNote?: string | null;
   };
 
+  const valueItems = proposal.valueItems.map((item) => ({
+    description: item.description,
+    quantity: item.quantity,
+    unitValue: item.unitValue.toNumber(),
+  }));
+
+  const valueItemsTotal = valueItems.reduce((sum, item) => sum + item.quantity * item.unitValue, 0);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -79,10 +87,16 @@ export default async function ProposalDetailPage({ params }: { params: Params })
             description: item.description ?? "",
           })),
           packageId: proposal.packageId ?? "",
-          totalAmount: proposal.totalAmount ? proposal.totalAmount.toNumber() : undefined,
+          totalAmount:
+            valueItems.length > 0
+              ? valueItemsTotal
+              : proposal.totalAmount
+                ? proposal.totalAmount.toNumber()
+                : undefined,
           paymentMethod: payload.paymentMethod ?? "",
           validUntil: toDateInputValue(proposal.validUntil),
           includedCosts: payload.includedCosts ?? "",
+          valueItems,
           payments: proposal.payments.map((payment) => ({
             dueDate: toDateInputValue(payment.dueDate),
             amount: payment.amount.toNumber(),

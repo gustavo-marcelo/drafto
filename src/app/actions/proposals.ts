@@ -62,7 +62,7 @@ export async function duplicateProposal(id: string): Promise<void> {
 
   const original = await prisma.proposal.findUnique({
     where: { id },
-    include: { modules: true, infrastructure: true, payments: true },
+    include: { modules: true, infrastructure: true, valueItems: true, payments: true },
   });
 
   if (!original) {
@@ -104,6 +104,14 @@ export async function duplicateProposal(id: string): Promise<void> {
         create: original.payments.map((payment) => ({
           dueDate: payment.dueDate,
           amount: payment.amount,
+        })),
+      },
+      valueItems: {
+        create: original.valueItems.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitValue: item.unitValue,
+          position: item.position,
         })),
       },
     },

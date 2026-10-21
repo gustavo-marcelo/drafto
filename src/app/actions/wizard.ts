@@ -30,6 +30,14 @@ function buildRelations(data: ReturnType<typeof wizardSchema.parse>) {
         amount: payment.amount,
       })),
     },
+    valueItems: {
+      create: data.valueItems.map((item, index) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitValue: item.unitValue,
+        position: index,
+      })),
+    },
     schedule: {
       create: data.schedule.map((item, index) => ({
         date: item.date,
@@ -81,6 +89,7 @@ export async function saveProposalFull(
     if (proposalId) {
       await tx.proposalModule.deleteMany({ where: { proposalId } });
       await tx.proposalInfrastructure.deleteMany({ where: { proposalId } });
+      await tx.proposalValueItem.deleteMany({ where: { proposalId } });
       await tx.payment.deleteMany({ where: { proposalId } });
       await tx.proposalScheduleItem.deleteMany({ where: { proposalId } });
 

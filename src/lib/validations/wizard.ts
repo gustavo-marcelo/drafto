@@ -17,6 +17,12 @@ export const wizardPaymentSchema = z.object({
   amount: z.coerce.number().min(0, { error: "Valor inválido." }),
 });
 
+export const wizardValueItemSchema = z.object({
+  description: z.string().min(3, { error: "Informe a descrição do item." }).trim(),
+  quantity: z.coerce.number().int().min(1, { error: "Quantidade mínima é 1." }),
+  unitValue: z.coerce.number().min(0, { error: "Valor unitário inválido." }),
+});
+
 export const wizardScheduleSchema = z.object({
   date: z.string().min(1, { error: "Informe a data." }),
   title: z.string().min(3, { error: "O título deve ter ao menos 3 caracteres." }).trim(),
@@ -45,6 +51,7 @@ export const wizardStep3Schema = z.object({
   paymentMethod: z.string().trim().optional().default(""),
   validUntil: z.string().trim().optional().default(""),
   includedCosts: z.string().trim().optional().default(""),
+  valueItems: z.array(wizardValueItemSchema).default([]),
   payments: z.array(wizardPaymentSchema).default([]),
 });
 
@@ -61,6 +68,7 @@ export const wizardSchema = wizardStep1Schema
   .merge(wizardStep4Schema);
 
 export type WizardPayment = z.infer<typeof wizardPaymentSchema>;
+export type WizardValueItem = z.infer<typeof wizardValueItemSchema>;
 export type WizardSchedule = z.infer<typeof wizardScheduleSchema>;
 export type WizardModule = z.infer<typeof wizardModuleSchema>;
 export type WizardInfrastructure = z.infer<typeof wizardInfrastructureSchema>;

@@ -192,6 +192,46 @@ function ScheduleList({ document }: { document: ProposalDocument }) {
   );
 }
 
+function ValueItemsTable({ document }: { document: ProposalDocument }) {
+  if (document.valueItems.length === 0) {
+    return null;
+  }
+
+  const total = document.valueItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+  return (
+    <section className="doc-section">
+      <h2 className="doc-section-title">Composição do valor</h2>
+      <table className="doc-table">
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th style={{ textAlign: "right" }}>Qtd.</th>
+            <th style={{ textAlign: "right" }}>Valor unitário</th>
+            <th style={{ textAlign: "right" }}>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {document.valueItems.map((item, index) => (
+            <tr key={`${item.description}-${index}`}>
+              <td>{item.description}</td>
+              <td className="doc-amount">{item.quantity}</td>
+              <td className="doc-amount">{formatCurrency(item.unitValue)}</td>
+              <td className="doc-amount">{formatCurrency(item.subtotal)}</td>
+            </tr>
+          ))}
+          <tr className="doc-total">
+            <td>Total</td>
+            <td />
+            <td />
+            <td className="doc-amount">{formatCurrency(total)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  );
+}
+
 function FinancialTable({ document }: { document: ProposalDocument }) {
   return (
     <section className="doc-section">
@@ -323,6 +363,7 @@ export function ProposalDocumentView({
       <article className="doc-page">
         <Header document={document} />
 
+        <ValueItemsTable document={document} />
         <FinancialTable document={document} />
         <PaymentSchedule document={document} />
 

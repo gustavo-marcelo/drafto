@@ -27,7 +27,15 @@ const STEPS = [
 const STEP_FIELDS: Record<number, string[]> = {
   1: ["title", "subtitle", "eventDate", "issuedAt", "location", "audience", "clientId"],
   2: ["solution", "modules", "infrastructure"],
-  3: ["packageId", "totalAmount", "paymentMethod", "validUntil", "includedCosts", "payments"],
+  3: [
+    "packageId",
+    "totalAmount",
+    "paymentMethod",
+    "validUntil",
+    "valueItems",
+    "includedCosts",
+    "payments",
+  ],
   4: ["requirements", "disclaimer", "acceptanceNote", "schedule"],
 };
 
@@ -68,6 +76,7 @@ const EMPTY: WizardData = {
   paymentMethod: "",
   validUntil: "",
   includedCosts: "",
+  valueItems: [],
   payments: [],
   requirements: "",
   disclaimer: "",

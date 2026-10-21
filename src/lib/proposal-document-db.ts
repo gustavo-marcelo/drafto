@@ -39,6 +39,7 @@ type DocumentSourceProposal = {
   } | null;
   modules: { title: string; description: string | null }[];
   infrastructure: { key: string; title: string; description: string | null }[];
+  valueItems: { description: string; quantity: number; unitValue: DecimalLike }[];
   payments: { dueDate: Date; amount: DecimalLike }[];
   schedule: { date: string; title: string; description: string | null }[];
 };
@@ -84,6 +85,15 @@ export function proposalToDocument(
       title: item.title,
       description: item.description,
     })),
+    valueItems: proposal.valueItems.map((item) => {
+      const unitValue = item.unitValue.toNumber();
+      return {
+        description: item.description,
+        quantity: item.quantity,
+        unitValue,
+        subtotal: item.quantity * unitValue,
+      };
+    }),
     payments: proposal.payments.map((payment) => ({
       dueDate: payment.dueDate.toISOString(),
       amount: payment.amount.toNumber(),

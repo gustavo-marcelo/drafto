@@ -135,10 +135,11 @@ model Proposal {
   packageId String?
   package   Package? @relation(fields: [packageId], references: [id])
 
-  modules       ProposalModule[]
+  modules        ProposalModule[]
   infrastructure ProposalInfrastructure[]
-  payments      Payment[]
-  schedule      ProposalScheduleItem[]
+  valueItems     ProposalValueItem[]
+  payments       Payment[]
+  schedule       ProposalScheduleItem[]
 
   @@index([status])
   @@index([clientId])
@@ -160,6 +161,20 @@ model ProposalInfrastructure {
   key         String
   title       String
   description String?
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([proposalId])
+}
+
+model ProposalValueItem {
+  id          String   @id @default(cuid())
+  description String
+  quantity    Int      @default(1)
+  unitValue   Decimal  @db.Decimal(12, 2)
+  position    Int      @default(0)
   proposalId  String
   proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())

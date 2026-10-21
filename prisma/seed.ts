@@ -120,7 +120,11 @@ async function main() {
 
   await prisma.proposal.upsert({
     where: { id: "seed-proposal-1" },
-    update: { code: "PR0001.0001", shareId: "demo1234abcd5678" },
+    update: {
+      code: "PR0001.0001",
+      shareId: "demo1234abcd5678",
+      totalAmount: 25000,
+    },
     create: {
       id: "seed-proposal-1",
       code: "PR0001.0001",
@@ -177,6 +181,34 @@ async function main() {
       title: "Estações de impressão",
       description: "Impressoras para crachás, etiquetas e materiais do participante.",
     },
+  });
+
+  await prisma.proposalValueItem.deleteMany({ where: { proposalId: "seed-proposal-1" } });
+
+  await prisma.proposalValueItem.createMany({
+    data: [
+      {
+        proposalId: "seed-proposal-1",
+        description: "Licença, configuração e painel do sistema de credenciamento",
+        quantity: 1,
+        unitValue: 15800,
+        position: 0,
+      },
+      {
+        proposalId: "seed-proposal-1",
+        description: "Suporte técnico presencial de até 8 horas",
+        quantity: 1,
+        unitValue: 6400,
+        position: 1,
+      },
+      {
+        proposalId: "seed-proposal-1",
+        description: "Internet de contingência 5G ou Starlink",
+        quantity: 1,
+        unitValue: 2800,
+        position: 2,
+      },
+    ],
   });
 
   await prisma.proposalScheduleItem.createMany({

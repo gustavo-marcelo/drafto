@@ -8,6 +8,13 @@ export type ProposalDocumentPayment = {
   amount: number;
 };
 
+export type ProposalDocumentValueItem = {
+  description: string;
+  quantity: number;
+  unitValue: number;
+  subtotal: number;
+};
+
 export type ProposalDocumentScheduleItem = {
   date: string;
   title: string;
@@ -54,6 +61,7 @@ export type ProposalDocument = {
   client: ProposalDocumentClient | null;
   modules: ProposalDocumentItem[];
   infrastructure: ProposalDocumentItem[];
+  valueItems: ProposalDocumentValueItem[];
   payments: ProposalDocumentPayment[];
   schedule: ProposalDocumentScheduleItem[];
   settings: ProposalDocumentSettings;

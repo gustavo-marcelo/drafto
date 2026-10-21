@@ -217,10 +217,11 @@ export const PROPOSAL_DOCUMENT_CSS = `
   }
   .doc-table .doc-amount { text-align: right; font-weight: 600; white-space: nowrap; }
   .doc-table tr.doc-total td {
-    background: var(--doc-primary);
-    color: #fff;
+    background: var(--doc-bg-soft);
+    color: var(--doc-primary);
     font-weight: 700;
-    font-size: 11pt;
+    font-size: 10pt;
+    border-top: 1px solid var(--doc-line);
     border-bottom: none;
   }
   .doc-table tr.doc-total .doc-amount { text-align: right; }

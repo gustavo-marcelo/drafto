@@ -3,7 +3,7 @@
 import { TextPresetTextarea } from "@/components/features/text-preset-textarea";
 import { Field, inputClass } from "@/components/ui/field";
 import { formatCurrency } from "@/lib/format";
-import type { WizardData, WizardPayment } from "@/lib/validations/wizard";
+import type { WizardData, WizardPayment, WizardValueItem } from "@/lib/validations/wizard";
 
 type StepFinanceiroProps = {
   data: WizardData;
@@ -11,11 +11,24 @@ type StepFinanceiroProps = {
   onChange: <K extends keyof WizardData>(key: K, value: WizardData[K]) => void;
 };
 
+function sumValueItems(items: WizardValueItem[]): number {
+  return items.reduce((sum, item) => {
+    const quantity = Number(item.quantity);
+    const unitValue = Number(item.unitValue);
+    const safeQuantity = Number.isNaN(quantity) ? 0 : quantity;
+    const safeUnitValue = Number.isNaN(unitValue) ? 0 : unitValue;
+    return sum + safeQuantity * safeUnitValue;
+  }, 0);
+}
+
 export function StepFinanceiro({ data, errors, onChange }: StepFinanceiroProps) {
   const paymentsTotal = data.payments.reduce((sum, payment) => {
     const amount = Number(payment.amount);
     return sum + (Number.isNaN(amount) ? 0 : amount);
   }, 0);
+
+  const valueItemsTotal = sumValueItems(data.valueItems);
+  const hasValueItems = data.valueItems.length > 0;
 
   function updatePayment(index: number, patch: Partial<WizardPayment>) {
     onChange(
@@ -35,6 +48,26 @@ export function StepFinanceiro({ data, errors, onChange }: StepFinanceiroProps) 
     );
   }
 
+  function applyValueItems(items: WizardValueItem[]) {
+    onChange("valueItems", items);
+
+    if (items.length > 0) {
+      onChange("totalAmount", sumValueItems(items));
+    }
+  }
+
+  function updateValueItem(index: number, patch: Partial<WizardValueItem>) {
+    applyValueItems(data.valueItems.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  }
+
+  function addValueItem() {
+    applyValueItems([...data.valueItems, { description: "", quantity: 1, unitValue: 0 }]);
+  }
+
+  function removeValueItem(index: number) {
+    applyValueItems(data.valueItems.filter((_, i) => i !== index));
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-primary-900 text-lg font-semibold">Valores e Condições Comerciais</h2>
@@ -46,13 +79,20 @@ export function StepFinanceiro({ data, errors, onChange }: StepFinanceiroProps) 
             type="number"
             min={0}
             step="0.01"
-            value={data.totalAmount ?? ""}
-            onChange={(e) =>
-              onChange("totalAmount", e.target.value === "" ? undefined : Number(e.target.value))
-            }
+            value={hasValueItems ? valueItemsTotal : (data.totalAmount ?? "")}
+            readOnly={hasValueItems}
+            onChange={(e) => {
+              if (hasValueItems) {
+                return;
+              }
+              onChange("totalAmount", e.target.value === "" ? undefined : Number(e.target.value));
+            }}
             placeholder="0,00"
-            className={inputClass}
+            className={`${inputClass} ${hasValueItems ? "bg-primary-50 text-primary-700" : ""}`}
           />
+          {hasValueItems && (
+            <p className="text-primary-700 text-xs">Calculado pela composição do valor</p>
+          )}
         </Field>
 
         <Field label="Forma de pagamento" name="paymentMethod" errors={errors.paymentMethod}>
@@ -75,6 +115,113 @@ export function StepFinanceiro({ data, errors, onChange }: StepFinanceiroProps) 
             className={inputClass}
           />
         </Field>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-primary-800 text-sm font-medium">Composição do valor</h3>
+          <button
+            type="button"
+            onClick={addValueItem}
+            className="border-primary-200 text-primary-800 hover:bg-primary-50 rounded-md border px-3 py-1.5 text-sm transition-colors"
+          >
+            + Adicionar item
+          </button>
+        </div>
+
+        {errors.valueItems && errors.valueItems.length > 0 && (
+          <p className="text-sm text-red-600">{errors.valueItems.join(" ")}</p>
+        )}
+
+        {data.valueItems.length === 0 ? (
+          <p className="text-primary-700 text-sm">Nenhum item adicionado.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {data.valueItems.map((item, index) => {
+              const quantity = Number(item.quantity);
+              const unitValue = Number(item.unitValue);
+              const subtotal =
+                (Number.isNaN(quantity) ? 0 : quantity) * (Number.isNaN(unitValue) ? 0 : unitValue);
+
+              return (
+                <div
+                  key={index}
+                  className="border-primary-100 flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-end"
+                >
+                  <div className="flex flex-1 flex-col gap-1">
+                    <label
+                      className="text-primary-800 text-sm font-medium"
+                      htmlFor={`value-item-${index}-description`}
+                    >
+                      Descrição
+                    </label>
+                    <input
+                      id={`value-item-${index}-description`}
+                      type="text"
+                      value={item.description}
+                      onChange={(e) => updateValueItem(index, { description: e.target.value })}
+                      placeholder="Ex: Licença, configuração e painel do sistema de credenciamento"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex w-full flex-col gap-1 sm:w-28">
+                    <label
+                      className="text-primary-800 text-sm font-medium"
+                      htmlFor={`value-item-${index}-quantity`}
+                    >
+                      Quantidade
+                    </label>
+                    <input
+                      id={`value-item-${index}-quantity`}
+                      type="number"
+                      min={1}
+                      step="1"
+                      value={item.quantity}
+                      onChange={(e) => updateValueItem(index, { quantity: Number(e.target.value) })}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex w-full flex-col gap-1 sm:w-40">
+                    <label
+                      className="text-primary-800 text-sm font-medium"
+                      htmlFor={`value-item-${index}-unitValue`}
+                    >
+                      Valor unitário (R$)
+                    </label>
+                    <input
+                      id={`value-item-${index}-unitValue`}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={item.unitValue}
+                      onChange={(e) =>
+                        updateValueItem(index, { unitValue: Number(e.target.value) })
+                      }
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 sm:w-36">
+                    <span className="text-primary-800 text-sm font-medium">Subtotal</span>
+                    <span className="text-primary-900 py-2 text-sm font-medium">
+                      {formatCurrency(subtotal)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeValueItem(index)}
+                    className="border-primary-200 rounded-md border px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
+                  >
+                    Remover
+                  </button>
+                </div>
+              );
+            })}
+            <div className="text-primary-800 flex justify-between text-sm">
+              <span>Total dos itens</span>
+              <span className="font-medium">{formatCurrency(valueItemsTotal)}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <TextPresetTextarea

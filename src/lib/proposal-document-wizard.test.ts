@@ -17,6 +17,7 @@ function baseWizard(overrides: Partial<WizardData> = {}): WizardData {
     solution: "",
     modules: [],
     infrastructure: [],
+    valueItems: [],
     packageId: "",
     paymentMethod: "",
     validUntil: "",
@@ -82,6 +83,23 @@ describe("wizardToDocument", () => {
     expect(doc.payments).toEqual([{ dueDate: "2026-11-01", amount: 12500 }]);
     expect(doc.schedule).toEqual([
       { date: "17/11/2026", title: "Montagem", description: "Testes" },
+    ]);
+  });
+
+  it("mapeia a composição do valor com subtotal calculado", () => {
+    const doc = wizardToDocument(
+      baseWizard({
+        valueItems: [
+          { description: "Licença e painel", quantity: 2, unitValue: 1500 },
+          { description: "Suporte presencial", quantity: 1, unitValue: 800 },
+        ],
+      }),
+      null,
+    );
+
+    expect(doc.valueItems).toEqual([
+      { description: "Licença e painel", quantity: 2, unitValue: 1500, subtotal: 3000 },
+      { description: "Suporte presencial", quantity: 1, unitValue: 800, subtotal: 800 },
     ]);
   });
 

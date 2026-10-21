@@ -16,6 +16,7 @@ function baseDocument(overrides: Partial<ProposalDocument> = {}): ProposalDocume
     client: null,
     modules: [],
     infrastructure: [],
+    valueItems: [],
     payments: [],
     schedule: [],
     settings: {},
@@ -75,5 +76,31 @@ describe("ProposalDocumentView", () => {
     expect(html).not.toContain(RESOURCES_TITLE);
     expect(html).not.toContain(INFRASTRUCTURE_TITLE);
     expect(html).not.toContain("doc-list");
+  });
+
+  it("mostra a composição do valor com quantidade, valor unitário e subtotal", () => {
+    const html = render(
+      baseDocument({
+        valueItems: [
+          {
+            description: "Licença, configuração e painel do sistema de credenciamento",
+            quantity: 1,
+            unitValue: 12000,
+            subtotal: 12000,
+          },
+        ],
+      }),
+    );
+
+    expect(html).toContain("Composição do valor");
+    expect(html).toContain("Licença, configuração e painel do sistema de credenciamento");
+    expect(html).toContain("Valor unitário");
+    expect(html).toContain("Subtotal");
+  });
+
+  it("não exibe a composição do valor quando não há itens", () => {
+    const html = render(baseDocument());
+
+    expect(html).not.toContain("Composição do valor");
   });
 });

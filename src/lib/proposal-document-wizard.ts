@@ -43,6 +43,12 @@ export function wizardToDocument(
       title: item.title,
       description: emptyToNull(item.description),
     })),
+    valueItems: data.valueItems.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitValue: item.unitValue,
+      subtotal: item.quantity * item.unitValue,
+    })),
     payments: data.payments.map((payment) => ({
       dueDate: payment.dueDate,
       amount: payment.amount,
