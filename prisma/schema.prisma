@@ -34,6 +34,7 @@ model User {
   id           String       @id @default(cuid())
   email        String       @unique
   name         String?
+  phone        String?
   passwordHash String
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -48,7 +49,12 @@ model User {
 model Client {
   id         String     @id @default(cuid())
   name       String
-  address    String?
+  zipCode    String?
+  street     String?
+  number     String?
+  complement String?
+  city       String?
+  state      String?
   document   String?
   contact    String?
   phone      String?

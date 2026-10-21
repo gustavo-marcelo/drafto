@@ -12,6 +12,7 @@ export default async function UsersPage() {
     id: user.id,
     email: user.email,
     name: user.name,
+    phone: user.phone,
     createdAt: user.createdAt,
     proposalsCount: user._count.proposals,
   }));

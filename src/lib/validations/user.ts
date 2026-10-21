@@ -8,13 +8,23 @@ const passwordSchema = z
 
 export const createUserSchema = z.object({
   name: z.string().trim().min(2, { error: "O nome deve ter ao menos 2 caracteres." }),
-  email: z.string().trim().toLowerCase().pipe(z.email({ error: "Informe um e-mail válido." })),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .pipe(z.email({ error: "Informe um e-mail válido." })),
+  phone: z.string().trim().optional().default(""),
   password: passwordSchema,
 });
 
 export const updateUserSchema = z.object({
   name: z.string().trim().min(2, { error: "O nome deve ter ao menos 2 caracteres." }),
-  email: z.string().trim().toLowerCase().pipe(z.email({ error: "Informe um e-mail válido." })),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .pipe(z.email({ error: "Informe um e-mail válido." })),
+  phone: z.string().trim().optional().default(""),
   password: z.union([z.literal(""), passwordSchema]).optional(),
 });
 
@@ -22,5 +32,5 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 export type UserActionResult =
-  | { ok: true; user: { id: string; email: string; name: string | null } }
+  | { ok: true; user: { id: string; email: string; name: string | null; phone: string | null } }
   | { ok: false; errors?: Record<string, string[]>; message?: string };

@@ -2,7 +2,19 @@ import { z } from "zod";
 
 export const clientSchema = z.object({
   name: z.string().min(2, { error: "Informe o nome do contratante." }).trim(),
-  address: z.string().trim().optional().default(""),
+  zipCode: z.string().trim().optional().default(""),
+  street: z.string().trim().optional().default(""),
+  number: z.string().trim().optional().default(""),
+  complement: z.string().trim().optional().default(""),
+  city: z.string().trim().optional().default(""),
+  state: z
+    .string()
+    .trim()
+    .optional()
+    .default("")
+    .refine((v) => v === "" || /^[A-Za-z]{2}$/.test(v), {
+      error: "Informe o estado com 2 letras (UF).",
+    }),
   document: z.string().trim().optional().default(""),
   contact: z.string().trim().optional().default(""),
   phone: z.string().trim().optional().default(""),

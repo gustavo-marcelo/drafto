@@ -9,6 +9,7 @@ export async function listUsers() {
       id: true,
       email: true,
       name: true,
+      phone: true,
       createdAt: true,
       _count: { select: { proposals: true } },
     },

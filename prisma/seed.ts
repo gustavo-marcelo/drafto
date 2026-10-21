@@ -57,7 +57,12 @@ async function main() {
     create: {
       id: "seed-client-1",
       name: "Empresa Exemplo LTDA",
-      address: "SHS Quadra 6, Bloco C, Brasília - DF",
+      zipCode: "70000-000",
+      street: "SHS Quadra 6, Bloco C",
+      number: "S/N",
+      complement: "Edifício Exemplo",
+      city: "Brasília",
+      state: "DF",
       document: "00.000.000/0001-00",
       contact: "Maria Souza",
       phone: "(61) 98765-4321",

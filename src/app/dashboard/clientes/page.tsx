@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ClientRowActions } from "@/components/features/client-row-actions";
 import { verifySession } from "@/lib/auth";
+import { formatAddress } from "@/lib/format";
 import { listClients } from "@/services/clients";
 
 type SearchParams = Promise<{ q?: string; error?: string }>;
@@ -76,7 +77,9 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
                     >
                       {client.name}
                     </Link>
-                    {client.address && <p className="text-primary-600 text-xs">{client.address}</p>}
+                    {formatAddress(client) && (
+                      <p className="text-primary-600 text-xs">{formatAddress(client)}</p>
+                    )}
                     {(client.phone || client.email) && (
                       <p className="text-primary-600 text-xs">
                         {[client.phone, client.email].filter(Boolean).join(" · ")}

@@ -25,7 +25,12 @@ export default async function ClientDetailPage({ params }: { params: Params }) {
         clientId={client.id}
         initialData={{
           name: client.name,
-          address: client.address ?? "",
+          zipCode: client.zipCode ?? "",
+          street: client.street ?? "",
+          number: client.number ?? "",
+          complement: client.complement ?? "",
+          city: client.city ?? "",
+          state: client.state ?? "",
           document: client.document ?? "",
           contact: client.contact ?? "",
           phone: client.phone ?? "",

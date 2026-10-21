@@ -1,5 +1,5 @@
 import { Field, inputClass } from "@/components/ui/field";
-import { formatDocument, formatPhone } from "@/lib/format";
+import { formatCep, formatDocument, formatPhone } from "@/lib/format";
 import type { ClientInput } from "@/lib/validations/client";
 
 type ClientFieldsProps = {
@@ -54,7 +54,7 @@ export function ClientFields({ form, errors, onChange }: ClientFieldsProps) {
           type="tel"
           inputMode="tel"
           value={formatPhone(form.phone)}
-          onChange={(e) => onChange("phone", e.target.value)}
+          onChange={(e) => onChange("phone", formatPhone(e.target.value))}
           placeholder="(00) 00000-0000"
           className={inputClass}
         />
@@ -72,22 +72,76 @@ export function ClientFields({ form, errors, onChange }: ClientFieldsProps) {
         />
       </Field>
 
-      <Field label="Endereço completo" name="client-address" errors={errors.address}>
-        <input
-          id="client-address"
-          type="text"
-          value={form.address}
-          onChange={(e) => onChange("address", e.target.value)}
-          className={inputClass}
-        />
-      </Field>
-
       <Field label="Contato no cliente" name="client-contact" errors={errors.contact}>
         <input
           id="client-contact"
           type="text"
           value={form.contact}
           onChange={(e) => onChange("contact", e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="CEP" name="client-zipCode" errors={errors.zipCode}>
+        <input
+          id="client-zipCode"
+          type="text"
+          inputMode="numeric"
+          value={formatCep(form.zipCode)}
+          onChange={(e) => onChange("zipCode", formatCep(e.target.value))}
+          placeholder="00000-000"
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Logradouro" name="client-street" errors={errors.street}>
+        <input
+          id="client-street"
+          type="text"
+          value={form.street}
+          onChange={(e) => onChange("street", e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Número" name="client-number" errors={errors.number}>
+        <input
+          id="client-number"
+          type="text"
+          value={form.number}
+          onChange={(e) => onChange("number", e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Complemento" name="client-complement" errors={errors.complement}>
+        <input
+          id="client-complement"
+          type="text"
+          value={form.complement}
+          onChange={(e) => onChange("complement", e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Cidade" name="client-city" errors={errors.city}>
+        <input
+          id="client-city"
+          type="text"
+          value={form.city}
+          onChange={(e) => onChange("city", e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Estado (UF)" name="client-state" errors={errors.state}>
+        <input
+          id="client-state"
+          type="text"
+          maxLength={2}
+          value={form.state}
+          onChange={(e) => onChange("state", e.target.value.toUpperCase())}
+          placeholder="DF"
           className={inputClass}
         />
       </Field>

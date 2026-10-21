@@ -33,7 +33,12 @@ export async function saveClient(input: unknown, clientId?: string): Promise<Cli
 
   const base = {
     name: data.name,
-    address: data.address || null,
+    zipCode: data.zipCode || null,
+    street: data.street || null,
+    number: data.number || null,
+    complement: data.complement || null,
+    city: data.city || null,
+    state: data.state || null,
     document: data.document || null,
     contact: data.contact || null,
     phone: data.phone || null,

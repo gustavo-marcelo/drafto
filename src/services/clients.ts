@@ -12,6 +12,9 @@ export async function listClients(q?: string) {
             { clientCode: { contains: q, mode: "insensitive" } },
             { email: { contains: q, mode: "insensitive" } },
             { phone: { contains: q, mode: "insensitive" } },
+            { city: { contains: q, mode: "insensitive" } },
+            { state: { contains: q, mode: "insensitive" } },
+            { zipCode: { contains: q, mode: "insensitive" } },
           ],
         }
       : undefined,
@@ -19,7 +22,12 @@ export async function listClients(q?: string) {
     select: {
       id: true,
       name: true,
-      address: true,
+      zipCode: true,
+      street: true,
+      number: true,
+      complement: true,
+      city: true,
+      state: true,
       document: true,
       contact: true,
       phone: true,

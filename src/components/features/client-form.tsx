@@ -9,7 +9,12 @@ import type { ClientInput } from "@/lib/validations/client";
 
 const EMPTY: ClientInput = {
   name: "",
-  address: "",
+  zipCode: "",
+  street: "",
+  number: "",
+  complement: "",
+  city: "",
+  state: "",
   document: "",
   contact: "",
   phone: "",

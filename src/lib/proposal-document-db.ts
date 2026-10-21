@@ -1,4 +1,5 @@
 import type { ProposalDocument, ProposalDocumentSettings } from "@/lib/proposal-document";
+import { formatAddress } from "@/lib/format";
 
 type ProposalPayload = {
   paymentMethod?: string | null;
@@ -24,7 +25,12 @@ type DocumentSourceProposal = {
   payload: unknown;
   client: {
     name: string;
-    address: string | null;
+    street: string | null;
+    number: string | null;
+    complement: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
     document: string | null;
     contact: string | null;
     clientCode: string | null;
@@ -62,7 +68,7 @@ export function proposalToDocument(
     client: proposal.client
       ? {
           name: proposal.client.name,
-          address: proposal.client.address,
+          address: formatAddress(proposal.client) || null,
           document: proposal.client.document,
           contact: proposal.client.contact,
           clientCode: proposal.client.clientCode,

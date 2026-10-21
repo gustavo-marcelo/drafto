@@ -6,11 +6,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/auth";
 import { captureServerError } from "@/lib/observability";
 import { prisma } from "@/lib/prisma";
-import {
-  createUserSchema,
-  type UserActionResult,
-  updateUserSchema,
-} from "@/lib/validations/user";
+import { createUserSchema, type UserActionResult, updateUserSchema } from "@/lib/validations/user";
 
 export async function createUser(input: unknown): Promise<UserActionResult> {
   await verifySession();
@@ -20,7 +16,7 @@ export async function createUser(input: unknown): Promise<UserActionResult> {
     return { ok: false, errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, phone, password } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
@@ -30,8 +26,8 @@ export async function createUser(input: unknown): Promise<UserActionResult> {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { name, email, passwordHash },
-      select: { id: true, email: true, name: true },
+      data: { name, email, phone: phone || null, passwordHash },
+      select: { id: true, email: true, name: true, phone: true },
     });
 
     revalidatePath("/dashboard/usuarios");
@@ -53,7 +49,7 @@ export async function updateUser(id: string, input: unknown): Promise<UserAction
     return { ok: false, errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, phone, password } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { id }, select: { id: true } });
   if (!existing) {
@@ -74,9 +70,10 @@ export async function updateUser(id: string, input: unknown): Promise<UserAction
       data: {
         name,
         email,
+        phone: phone || null,
         ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}),
       },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, phone: true },
     });
 
     revalidatePath("/dashboard/usuarios");

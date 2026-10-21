@@ -5,12 +5,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { UserForm } from "@/components/features/user-form";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatPhone } from "@/lib/format";
 
 export type UserRow = {
   id: string;
   email: string;
   name: string | null;
+  phone: string | null;
   createdAt: Date;
   proposalsCount: number;
 };
@@ -33,7 +34,9 @@ export function UsersManager({ users }: { users: UserRow[] }) {
           userId={editingId}
           initialData={(() => {
             const user = users.find((item) => item.id === editingId);
-            return user ? { name: user.name ?? "", email: user.email } : undefined;
+            return user
+              ? { name: user.name ?? "", email: user.email, phone: user.phone ?? "" }
+              : undefined;
           })()}
           onDone={handleDone}
           onCancel={() => setEditingId(null)}
@@ -48,6 +51,7 @@ export function UsersManager({ users }: { users: UserRow[] }) {
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
               <th className="px-4 py-3 font-medium">E-mail</th>
+              <th className="px-4 py-3 font-medium">Telefone</th>
               <th className="px-4 py-3 font-medium">Propostas</th>
               <th className="px-4 py-3 font-medium">Criado em</th>
               <th className="px-4 py-3 text-right font-medium">Ações</th>
@@ -58,6 +62,9 @@ export function UsersManager({ users }: { users: UserRow[] }) {
               <tr key={user.id} className="border-primary-50 border-b last:border-0">
                 <td className="text-primary-900 px-4 py-3 font-medium">{user.name ?? "—"}</td>
                 <td className="text-primary-700 px-4 py-3">{user.email}</td>
+                <td className="text-primary-700 px-4 py-3">
+                  {user.phone ? formatPhone(user.phone) : "—"}
+                </td>
                 <td className="text-primary-700 px-4 py-3">{user.proposalsCount}</td>
                 <td className="text-primary-700 px-4 py-3">{formatDate(user.createdAt)}</td>
                 <td className="px-4 py-3">

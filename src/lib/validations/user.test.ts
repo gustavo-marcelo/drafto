@@ -56,6 +56,33 @@ describe("createUserSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("aceita telefone opcional e aplica trim", () => {
+    const result = createUserSchema.safeParse({
+      name: "Maria",
+      email: "maria@exemplo.com",
+      phone: "  (61) 98765-4321  ",
+      password: "senha1234",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.phone).toBe("(61) 98765-4321");
+    }
+  });
+
+  it("usa telefone vazio como padrão", () => {
+    const result = createUserSchema.safeParse({
+      name: "Maria",
+      email: "maria@exemplo.com",
+      password: "senha1234",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.phone).toBe("");
+    }
+  });
 });
 
 describe("updateUserSchema", () => {

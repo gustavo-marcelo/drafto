@@ -25,11 +25,15 @@ test.describe("Usuários", () => {
 
     await page.getByLabel("Nome").fill("Usuário E2E");
     await page.getByLabel("E-mail").fill(email);
+    await page.getByLabel("Telefone").fill("61987654321");
     await page.getByLabel("Senha", { exact: true }).fill("senha-segura-123");
     await page.getByRole("button", { name: "Criar usuário" }).click();
 
     await expect(page.getByText(`Usuário ${email} criado.`)).toBeVisible();
     await expect(page.locator("table")).toContainText(email);
+
+    const row = page.locator("tr", { hasText: email });
+    await expect(row).toContainText("(61) 98765-4321");
   });
 
   test("rejeita e-mail duplicado", async ({ authedPage: page }) => {
@@ -51,7 +55,7 @@ test.describe("Usuários", () => {
     await expect(page.getByText("Já existe uma conta com este e-mail.")).toBeVisible();
   });
 
-  test("edita o nome de um usuário existente", async ({ authedPage: page }) => {
+  test("edita o nome e o telefone de um usuário existente", async ({ authedPage: page }) => {
     await page.goto("/dashboard/usuarios");
 
     const email = `e2e-user-${Date.now()}@destrava.ai`;
@@ -67,10 +71,12 @@ test.describe("Usuários", () => {
     const nameInput = page.getByLabel("Nome");
     await expect(nameInput).toHaveValue("Nome Original");
     await nameInput.fill("Nome Editado");
+    await page.getByLabel("Telefone").fill("11912345678");
     await page.getByRole("button", { name: "Salvar alterações" }).click();
 
     await expect(page.getByText(`Usuário ${email} atualizado.`)).toBeVisible();
     await expect(page.locator("tr", { hasText: email })).toContainText("Nome Editado");
+    await expect(page.locator("tr", { hasText: email })).toContainText("(11) 91234-5678");
   });
 
   test("alterna a visibilidade da senha", async ({ authedPage: page }) => {

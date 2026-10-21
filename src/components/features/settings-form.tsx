@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 
 import { saveSettings } from "@/app/actions/settings";
 import { Field, inputClass } from "@/components/ui/field";
+import { formatCnpj, formatPhone } from "@/lib/format";
 import type { Settings } from "@/services/settings";
 import { type SettingsData, settingsSchema } from "@/lib/validations/settings";
 
@@ -215,8 +216,9 @@ export function SettingsForm({ initial }: SettingsFormProps) {
             <input
               id="cnpj"
               type="text"
-              value={data.cnpj}
-              onChange={(e) => update("cnpj", e.target.value)}
+              inputMode="numeric"
+              value={formatCnpj(data.cnpj)}
+              onChange={(e) => update("cnpj", formatCnpj(e.target.value))}
               placeholder="Ex: 00.000.000/0001-00"
               className={inputClass}
             />
@@ -225,9 +227,10 @@ export function SettingsForm({ initial }: SettingsFormProps) {
           <Field label="Telefone" name="phone" errors={errors.phone}>
             <input
               id="phone"
-              type="text"
-              value={data.phone}
-              onChange={(e) => update("phone", e.target.value)}
+              type="tel"
+              inputMode="tel"
+              value={formatPhone(data.phone)}
+              onChange={(e) => update("phone", formatPhone(e.target.value))}
               placeholder="Ex: (61) 98765-4321"
               className={inputClass}
             />

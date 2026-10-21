@@ -5,12 +5,13 @@ import { useState, useTransition } from "react";
 import { createUser, updateUser } from "@/app/actions/users";
 import { Field, inputClass } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
+import { formatPhone } from "@/lib/format";
 
-const EMPTY = { name: "", email: "", password: "" };
+const EMPTY = { name: "", email: "", phone: "", password: "" };
 
 type UserFormProps = {
   userId?: string;
-  initialData?: { name: string; email: string };
+  initialData?: { name: string; email: string; phone?: string };
   onDone?: (email: string) => void;
   onCancel?: () => void;
 };
@@ -21,6 +22,7 @@ export function UserForm({ userId, initialData, onDone, onCancel }: UserFormProp
     ...EMPTY,
     name: initialData?.name ?? "",
     email: initialData?.email ?? "",
+    phone: initialData?.phone ?? "",
   });
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export function UserForm({ userId, initialData, onDone, onCancel }: UserFormProp
         event.preventDefault();
         submit();
       }}
-      className="flex max-w-3xl flex-col gap-4 rounded-lg border border-primary-100 bg-white p-6"
+      className="border-primary-100 flex max-w-3xl flex-col gap-4 rounded-lg border bg-white p-6"
     >
       <h2 className="text-primary-900 text-lg font-semibold">
         {isEdit ? "Editar usuário" : "Novo usuário"}
@@ -79,6 +81,22 @@ export function UserForm({ userId, initialData, onDone, onCancel }: UserFormProp
           autoComplete="off"
           value={form.email}
           onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Telefone" name="phone" errors={errors.phone}>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="off"
+          value={formatPhone(form.phone)}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, phone: formatPhone(event.target.value) }))
+          }
+          placeholder="(00) 00000-0000"
           className={inputClass}
         />
       </Field>

@@ -19,7 +19,12 @@ type StepEventoProps = {
 
 const EMPTY_CLIENT: ClientInput = {
   name: "",
-  address: "",
+  zipCode: "",
+  street: "",
+  number: "",
+  complement: "",
+  city: "",
+  state: "",
   document: "",
   contact: "",
   phone: "",
