@@ -137,16 +137,7 @@ function ClientBlock({ document }: { document: ProposalDocument }) {
   );
 }
 
-function ItemList({
-  items,
-  emptyMessage,
-}: {
-  items: ProposalDocumentItem[];
-  emptyMessage: string;
-}) {
-  if (items.length === 0) {
-    return <p className="doc-empty">{emptyMessage}</p>;
-  }
+function ItemList({ items }: { items: ProposalDocumentItem[] }) {
   return (
     <ul className="doc-list">
       {items.map((item, index) => (
@@ -164,6 +155,19 @@ function ItemList({
         </li>
       ))}
     </ul>
+  );
+}
+
+function CatalogSection({ title, items }: { title: string; items: ProposalDocumentItem[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="doc-section">
+      <h2 className="doc-section-title">{title}</h2>
+      <ItemList items={items} />
+    </section>
   );
 }
 
@@ -287,18 +291,8 @@ export function ProposalDocumentView({
           </section>
         )}
 
-        <section className="doc-section">
-          <h2 className="doc-section-title">Recursos do sistema de credenciamento</h2>
-          <ItemList items={document.modules} emptyMessage="Nenhum recurso selecionado." />
-        </section>
-
-        <section className="doc-section">
-          <h2 className="doc-section-title">Infraestrutura e operação</h2>
-          <ItemList
-            items={document.infrastructure}
-            emptyMessage="Nenhum item de infraestrutura informado."
-          />
-        </section>
+        <CatalogSection title="Recursos do sistema de credenciamento" items={document.modules} />
+        <CatalogSection title="Infraestrutura e operação" items={document.infrastructure} />
 
         {includeFooter && <Footer document={document} pageNumber={1} totalPages={totalPages} />}
       </article>

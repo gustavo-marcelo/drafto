@@ -165,7 +165,13 @@ export const PROPOSAL_DOCUMENT_CSS = `
 
   .doc-text { font-size: 9.5pt; line-height: 1.55; color: var(--doc-ink); margin: 0; }
 
-  .doc-list { list-style: none; margin: 0; padding: 0; }
+  .doc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    column-count: 2;
+    column-gap: 6mm;
+  }
   .doc-list li {
     display: flex;
     align-items: flex-start;
@@ -174,6 +180,8 @@ export const PROPOSAL_DOCUMENT_CSS = `
     border-bottom: 1px solid var(--doc-line);
     font-size: 9.5pt;
     line-height: 1.4;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .doc-list li:last-child { border-bottom: none; }
 
@@ -261,8 +269,6 @@ export const PROPOSAL_DOCUMENT_CSS = `
   .doc-signature-line { border-top: 1px solid var(--doc-ink); padding-top: 2mm; }
   .doc-signature-line .doc-signature-role { font-size: 8.5pt; color: var(--doc-muted); }
   .doc-signature-line .doc-signature-name { font-size: 9pt; color: var(--doc-ink); margin-bottom: 8mm; }
-
-  .doc-empty { color: var(--doc-muted); font-style: italic; font-size: 9pt; }
 
   .doc-public-shell { padding-bottom: 10mm; }
   .doc-public-bar {
