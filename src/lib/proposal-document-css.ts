@@ -124,6 +124,7 @@ export const PROPOSAL_DOCUMENT_CSS = `
   }
 
   .doc-footer-contact { color: var(--doc-muted); }
+  .doc-footer-version { color: var(--doc-muted); }
 
   .doc-section { margin-bottom: 5mm; }
   .doc-section:last-child { margin-bottom: 0; }

@@ -233,6 +233,24 @@ pm2 restart proposta
 > cliente Prisma em `node_modules/.prisma`, sem o qual o build falha com
 > `Cannot find module '.prisma/client/default'`.
 
+### Conferir qual versão está no ar
+
+```bash
+curl -s http://localhost:3000/api/version
+# {"version":"a7c1d64","buildId":"p27QRl5HvVpjI-LH3BuYm","startedAt":"2026-10-21T20:00:00.000Z","node":"v22.14.0"}
+```
+
+- `version`: commit do Git do **build em execução** (também aparece no rodapé do PDF e do documento público)
+- `buildId`: identificador do `.next/BUILD_ID` — compare com `cat .next/BUILD_ID` para confirmar que o servidor serve o build recém-gerado
+- `startedAt`: quando o processo subiu — se for anterior ao último build, há um processo antigo no ar (`pm2 restart proposta`)
+
+Se a versão servida não for a esperada, o problema é cache/processo, não código:
+
+```bash
+rm -rf .next && npm run build     # limpa o cache de build do Turbopack
+pm2 delete proposta && pm2 start npm --name proposta -- start && pm2 save
+```
+
 ---
 
 ## Solução de problemas

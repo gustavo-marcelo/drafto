@@ -1,5 +1,6 @@
 import React, { type ReactNode } from "react";
 
+import { APP_VERSION_LABEL } from "@/lib/app-version";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { ProposalDocument, ProposalDocumentItem } from "@/lib/proposal-document";
 import {
@@ -76,6 +77,7 @@ function Footer({
       <span>
         {companyName(document)} — Documento gerado eletronicamente
         {contact && <span className="doc-footer-contact"> · {contact}</span>}
+        <span className="doc-footer-version"> · {APP_VERSION_LABEL}</span>
       </span>
       <span className="doc-page-number">
         Página {pageNumber} de {totalPages}
