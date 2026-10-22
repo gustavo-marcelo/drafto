@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 
-import type { ClientOption } from "../proposal-wizard";
+import type { ClientOption, ProjectOption } from "../proposal-wizard";
 import { saveClient } from "@/app/actions/clients";
 import { ClientFields } from "@/components/features/client-fields";
 import { Field, inputClass } from "@/components/ui/field";
@@ -13,6 +14,7 @@ type StepEventoProps = {
   data: WizardData;
   errors: Record<string, string[]>;
   clients: ClientOption[];
+  projects: ProjectOption[];
   onChange: <K extends keyof WizardData>(key: K, value: WizardData[K]) => void;
   onClientCreated: (client: ClientOption) => void;
 };
@@ -77,8 +79,35 @@ function NewClientForm({ onCreated }: { onCreated: (client: ClientOption) => voi
   );
 }
 
-export function StepEvento({ data, errors, clients, onChange, onClientCreated }: StepEventoProps) {
+export function StepEvento({
+  data,
+  errors,
+  clients,
+  projects,
+  onChange,
+  onClientCreated,
+}: StepEventoProps) {
   const [showNewClient, setShowNewClient] = useState(false);
+  const availableProjects = data.clientId
+    ? projects.filter((project) => project.clientId === data.clientId)
+    : projects;
+  const selectedProject = projects.find((project) => project.id === data.projectId) ?? null;
+
+  function handleClientChange(clientId: string) {
+    onChange("clientId", clientId);
+    const project = projects.find((item) => item.id === data.projectId);
+    if (project && project.clientId !== clientId) {
+      onChange("projectId", "");
+    }
+  }
+
+  function handleProjectChange(projectId: string) {
+    onChange("projectId", projectId);
+    const project = projects.find((item) => item.id === projectId);
+    if (project) {
+      onChange("clientId", project.clientId);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -154,7 +183,7 @@ export function StepEvento({ data, errors, clients, onChange, onClientCreated }:
             <select
               id="clientId"
               value={data.clientId}
-              onChange={(e) => onChange("clientId", e.target.value)}
+              onChange={(e) => handleClientChange(e.target.value)}
               className={inputClass}
             >
               <option value="">— Selecione —</option>
@@ -179,11 +208,44 @@ export function StepEvento({ data, errors, clients, onChange, onClientCreated }:
           <NewClientForm
             onCreated={(client) => {
               onClientCreated(client);
+              onChange("projectId", "");
               setShowNewClient(false);
             }}
           />
         )}
       </div>
+
+      <Field label="Projeto vinculado" name="projectId" errors={errors.projectId}>
+        <select
+          id="projectId"
+          value={data.projectId}
+          onChange={(e) => handleProjectChange(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">— Sem projeto —</option>
+          {availableProjects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+              {!data.clientId ? ` — ${project.clientName}` : ""}
+            </option>
+          ))}
+        </select>
+        <p className="text-primary-600 text-xs">
+          Vincule a proposta a um projeto para acessar os documentos anexados.
+          {data.clientId && availableProjects.length === 0
+            ? " Nenhum projeto encontrado para o cliente selecionado."
+            : ""}
+        </p>
+        {selectedProject && (
+          <Link
+            href={`/dashboard/projetos/${selectedProject.id}`}
+            rel="noreferrer"
+            className="text-primary-600 hover:text-primary-800 text-xs font-medium hover:underline"
+          >
+            Abrir documentos do projeto
+          </Link>
+        )}
+      </Field>
     </div>
   );
 }

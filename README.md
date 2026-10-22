@@ -1,6 +1,6 @@
 # Proposta.ai
 
-Gerador de propostas comerciais — criação, edição, gestão e exportação (PDF) de propostas para credenciamento e gestão de eventos.
+Gerador de propostas comerciais — criação, edição, gestão e exportação (PDF) de propostas para credenciamento e gestão de eventos. Inclui gestão de projetos por cliente com documentos anexados em Markdown.
 
 ## Stack
 
@@ -100,6 +100,7 @@ prisma/           # schema e migrações
 ## Documentação
 
 - [Especificação](./docs/especificacao.md)
+- [Projetos e documentos Markdown](./docs/projetos.md)
 - [Plano de desenvolvimento](./docs/plano-de-desenvolvimento.md)
 - [Deploy e observabilidade](./docs/deploy-e-observabilidade.md)
 - [Deploy no Raspberry Pi](./docs/deploy-raspberry.md)

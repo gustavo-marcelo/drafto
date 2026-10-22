@@ -14,6 +14,7 @@ function baseWizard(overrides: Partial<WizardData> = {}): WizardData {
     location: "",
     audience: "",
     clientId: "",
+    projectId: "",
     solution: "",
     modules: [],
     infrastructure: [],

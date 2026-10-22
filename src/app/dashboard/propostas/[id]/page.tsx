@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ProposalShareActions } from "@/components/features/proposal-share-actions";
@@ -8,6 +9,7 @@ import { toDateInputValue } from "@/lib/format";
 import { getProposalById, listClients, listPackages } from "@/services/proposals";
 import { expireOverdueProposals } from "@/services/expiration";
 import { listInfrastructures } from "@/services/infrastructures";
+import { listProjectOptions } from "@/services/projects";
 import { listResources } from "@/services/resources";
 import { getSettings } from "@/services/settings";
 
@@ -20,14 +22,16 @@ export default async function ProposalDetailPage({ params }: { params: Params })
   await expireOverdueProposals();
 
   const { id } = await params;
-  const [proposal, clients, packages, resources, infrastructures, settings] = await Promise.all([
-    getProposalById(id),
-    listClients(),
-    listPackages(),
-    listResources(),
-    listInfrastructures(),
-    getSettings(),
-  ]);
+  const [proposal, clients, projects, packages, resources, infrastructures, settings] =
+    await Promise.all([
+      getProposalById(id),
+      listClients(),
+      listProjectOptions(),
+      listPackages(),
+      listResources(),
+      listInfrastructures(),
+      getSettings(),
+    ]);
 
   if (!proposal) {
     notFound();
@@ -60,8 +64,24 @@ export default async function ProposalDetailPage({ params }: { params: Params })
         <ProposalShareActions proposalId={proposal.id} shareId={proposal.shareId} />
       </div>
 
+      {proposal.project && (
+        <Link
+          href={`/dashboard/projetos/${proposal.project.id}`}
+          className="border-primary-100 hover:border-primary-200 flex flex-col gap-1 rounded-lg border bg-white p-4 transition-colors sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <p className="text-primary-600 text-xs font-medium tracking-wide uppercase">
+              Projeto vinculado
+            </p>
+            <p className="text-primary-900 font-medium">{proposal.project.name}</p>
+          </div>
+          <span className="text-primary-700 text-sm">Abrir documentos do projeto →</span>
+        </Link>
+      )}
+
       <ProposalWizard
         clients={clients}
+        projects={projects}
         packages={packages}
         resources={resources}
         infrastructures={infrastructures}
@@ -75,6 +95,7 @@ export default async function ProposalDetailPage({ params }: { params: Params })
           location: proposal.location ?? "",
           audience: proposal.audience ?? "",
           clientId: proposal.clientId ?? "",
+          projectId: proposal.projectId ?? "",
           solution: proposal.solution ?? "",
           modules: proposal.modules.map((module) => ({
             key: module.key,

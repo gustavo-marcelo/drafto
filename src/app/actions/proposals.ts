@@ -85,6 +85,7 @@ export async function duplicateProposal(id: string): Promise<void> {
       totalAmount: original.totalAmount,
       payload: original.payload ?? undefined,
       clientId: original.clientId,
+      projectId: original.projectId,
       packageId: original.packageId,
       authorId: original.authorId,
       status: "DRAFT",

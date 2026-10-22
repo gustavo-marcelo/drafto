@@ -8,6 +8,7 @@ import { useState, type ReactNode } from "react";
 import {
   IconClose,
   IconFileText,
+  IconFolder,
   IconLayers,
   IconMenu,
   IconPackage,
@@ -25,6 +26,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Propostas", icon: IconFileText, exact: true },
+  { href: "/dashboard/projetos", label: "Projetos", icon: IconFolder },
   { href: "/dashboard/clientes", label: "Clientes", icon: IconUsers },
   { href: "/dashboard/pacotes", label: "Pacotes", icon: IconPackage },
   { href: "/dashboard/recursos", label: "Recursos", icon: IconLayers },
@@ -52,21 +54,21 @@ export function DashboardShell({
     <div className="flex flex-1 flex-col">
       <a
         href="#conteudo"
-        className="focus:bg-primary-600 sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+        className="focus:bg-primary-600 sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:text-white print:hidden"
       >
         Pular para o conteúdo
       </a>
       <div className="flex flex-1">
         {open && (
           <div
-            className="bg-primary-950/40 fixed inset-0 z-30 lg:hidden"
+            className="bg-primary-950/40 fixed inset-0 z-30 lg:hidden print:hidden"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
         )}
 
         <aside
-          className={`border-primary-100 fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+          className={`border-primary-100 fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 print:hidden ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -113,7 +115,7 @@ export function DashboardShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="border-primary-100 sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b bg-white px-4 sm:px-6">
+          <header className="border-primary-100 sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b bg-white px-4 sm:px-6 print:hidden">
             <button
               type="button"
               onClick={() => setOpen(true)}
@@ -127,7 +129,7 @@ export function DashboardShell({
           </header>
           <main
             id="conteudo"
-            className="bg-primary-50 flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8"
+            className="bg-primary-50 flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8 print:bg-white print:p-0"
           >
             {children}
           </main>

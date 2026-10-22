@@ -62,6 +62,26 @@ export async function saveProposalFull(
 
   const data = parsed.data;
 
+  const project = data.projectId
+    ? await prisma.project.findUnique({
+        where: { id: data.projectId },
+        select: { id: true, clientId: true },
+      })
+    : null;
+
+  if (data.projectId && !project) {
+    return { ok: false, errors: { projectId: ["Projeto não encontrado."] } };
+  }
+
+  if (project && data.clientId && project.clientId !== data.clientId) {
+    return {
+      ok: false,
+      errors: { projectId: ["O projeto selecionado pertence a outro cliente."] },
+    };
+  }
+
+  const clientId = data.clientId || project?.clientId || null;
+
   const payload = {
     paymentMethod: data.paymentMethod || null,
     includedCosts: data.includedCosts || null,
@@ -80,7 +100,8 @@ export async function saveProposalFull(
     solution: data.solution || null,
     validUntil: data.validUntil ? new Date(data.validUntil) : null,
     totalAmount: data.totalAmount ?? null,
-    clientId: data.clientId || null,
+    clientId,
+    projectId: project?.id ?? null,
     packageId: data.packageId || null,
     payload,
   };

@@ -25,7 +25,16 @@ const STEPS = [
 ];
 
 const STEP_FIELDS: Record<number, string[]> = {
-  1: ["title", "subtitle", "eventDate", "issuedAt", "location", "audience", "clientId"],
+  1: [
+    "title",
+    "subtitle",
+    "eventDate",
+    "issuedAt",
+    "location",
+    "audience",
+    "clientId",
+    "projectId",
+  ],
   2: ["solution", "modules", "infrastructure"],
   3: [
     "packageId",
@@ -46,6 +55,12 @@ function errorsForStep(flat: Record<string, string[]>, step: number): Record<str
 }
 
 export type { ClientOption };
+export type ProjectOption = {
+  id: string;
+  name: string;
+  clientId: string;
+  clientName: string;
+};
 export type PackageOption = { id: string; name: string; payload?: unknown };
 export type ResourceOption = {
   id: string;
@@ -68,6 +83,7 @@ const EMPTY: WizardData = {
   location: "",
   audience: "",
   clientId: "",
+  projectId: "",
   solution: "",
   modules: [],
   infrastructure: [],
@@ -104,6 +120,7 @@ const DEFAULT_SCHEDULE: WizardData["schedule"] = [
 
 type WizardProps = {
   clients: ClientOption[];
+  projects: ProjectOption[];
   packages: PackageOption[];
   resources: ResourceOption[];
   infrastructures: InfrastructureOption[];
@@ -114,6 +131,7 @@ type WizardProps = {
 
 export function ProposalWizard({
   clients,
+  projects,
   packages,
   resources,
   infrastructures,
@@ -298,6 +316,7 @@ export function ProposalWizard({
                 data={data}
                 errors={errors}
                 clients={clientList}
+                projects={projects}
                 onChange={update}
                 onClientCreated={(client) => {
                   setClientList((prev) => [...prev, client]);

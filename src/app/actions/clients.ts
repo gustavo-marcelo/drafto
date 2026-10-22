@@ -104,14 +104,14 @@ export async function deleteClient(id: string): Promise<void> {
 
   const client = await prisma.client.findUnique({
     where: { id },
-    select: { _count: { select: { proposals: true } } },
+    select: { _count: { select: { proposals: true, projects: true } } },
   });
 
   if (!client) {
     redirect("/dashboard/clientes");
   }
 
-  if (client._count.proposals > 0) {
+  if (client._count.proposals > 0 || client._count.projects > 0) {
     redirect("/dashboard/clientes?error=vinculada");
   }
 

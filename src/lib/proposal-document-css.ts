@@ -6,7 +6,7 @@
  * dos blocos importa: cada um só depende dos anteriores.
  */
 
-const DOCUMENT_CSS_BASE = `
+const DOCUMENT_CSS_TOKENS = `
   :root {
     --doc-primary: #123b36;
     --doc-primary-700: #002824;
@@ -17,6 +17,10 @@ const DOCUMENT_CSS_BASE = `
     --doc-line: #d7e0dd;
     --doc-bg-soft: #f3f7f6;
   }
+`;
+
+const DOCUMENT_CSS_BASE = `
+  ${DOCUMENT_CSS_TOKENS}
 
   * { box-sizing: border-box; }
 
@@ -314,3 +318,5 @@ export const PROPOSAL_DOCUMENT_CSS = [
   DOCUMENT_CSS_VALUES,
   DOCUMENT_CSS_SHELLS,
 ].join("\n");
+
+export const PROPOSAL_DOCUMENT_HEADER_CSS = [DOCUMENT_CSS_TOKENS, DOCUMENT_CSS_HEADER].join("\n");

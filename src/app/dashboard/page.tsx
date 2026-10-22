@@ -79,6 +79,9 @@ async function ProposalList({ q, status }: { q?: string; status?: string }) {
               Cliente
             </th>
             <th scope="col" className="px-4 py-3 font-medium">
+              Projeto
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
               Evento
             </th>
             <th scope="col" className="px-4 py-3 font-medium">
@@ -107,6 +110,18 @@ async function ProposalList({ q, status }: { q?: string; status?: string }) {
                 </Link>
               </td>
               <td className="text-primary-700 px-4 py-3">{proposal.clientName ?? "—"}</td>
+              <td className="text-primary-700 px-4 py-3">
+                {proposal.projectId && proposal.projectName ? (
+                  <Link
+                    href={`/dashboard/projetos/${proposal.projectId}`}
+                    className="hover:text-primary-900 underline-offset-2 hover:underline"
+                  >
+                    {proposal.projectName}
+                  </Link>
+                ) : (
+                  "—"
+                )}
+              </td>
               <td className="text-primary-700 px-4 py-3">{formatDate(proposal.eventDate)}</td>
               <td className="text-primary-700 px-4 py-3">{formatCurrency(proposal.totalAmount)}</td>
               <td className="px-4 py-3">

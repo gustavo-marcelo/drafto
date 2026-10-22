@@ -123,6 +123,16 @@ A proposta é dividida em **5 blocos principais**:
 
 - Cabeçalho/Rodapé padronizados com logo da empresa e numeração de página.
 
+### 3.4. Gestão de Projetos e Documentos Markdown
+
+- **Cadastro de Projeto**: nome, breve descrição e vínculo obrigatório com um cliente cadastrado.
+- **Documentos anexos**: cada projeto pode ter vários documentos em formato Markdown, com título e conteúdo.
+- **Editor Markdown**: escrita direta no painel, importação de arquivos `.md`/`.markdown` e download do documento como `.md`.
+- **Listagem e busca**: localização de projetos por nome, descrição, cliente ou código do cliente.
+- **Integridade**: o cliente só pode ser excluído se não possuir propostas ou projetos vinculados; excluir o projeto remove seus documentos anexos.
+
+Detalhes de implementação em [Projetos e documentos Markdown](./projetos.md).
+
 ---
 
 ## 4. Arquitetura e Tecnologias Recomendadas

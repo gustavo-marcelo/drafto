@@ -29,7 +29,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
 
       {params.error === "vinculada" && (
         <p className="border-accent-200 bg-accent-50 text-accent-900 rounded-md border px-4 py-3 text-sm">
-          Este cliente possui propostas vinculadas e não pode ser excluído.
+          Este cliente possui propostas ou projetos vinculados e não pode ser excluído.
         </p>
       )}
 
@@ -63,6 +63,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
                 <th className="px-4 py-3 font-medium">CNPJ / CPF</th>
                 <th className="px-4 py-3 font-medium">Contato</th>
                 <th className="px-4 py-3 font-medium">Propostas</th>
+                <th className="px-4 py-3 font-medium">Projetos</th>
                 <th className="px-4 py-3 text-right font-medium">Ações</th>
               </tr>
             </thead>
@@ -89,6 +90,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
                   <td className="text-primary-700 px-4 py-3">{client.document ?? "—"}</td>
                   <td className="text-primary-700 px-4 py-3">{client.contact ?? "—"}</td>
                   <td className="text-primary-700 px-4 py-3">{client._count.proposals}</td>
+                  <td className="text-primary-700 px-4 py-3">{client._count.projects}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <Link
@@ -97,7 +99,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
                       >
                         Editar
                       </Link>
-                      <ClientRowActions id={client.id} hasProposals={client._count.proposals > 0} />
+                      <ClientRowActions
+                        id={client.id}
+                        hasLinks={client._count.proposals > 0 || client._count.projects > 0}
+                      />
                     </div>
                   </td>
                 </tr>

@@ -12,6 +12,8 @@ export type ProposalListItem = {
   status: ProposalStatus;
   eventDate: Date | null;
   clientName: string | null;
+  projectId: string | null;
+  projectName: string | null;
   totalAmount: string | null;
   updatedAt: Date;
 };
@@ -33,6 +35,7 @@ export async function listProposals(filters: ProposalFilters = {}): Promise<Prop
       { title: { contains: filters.q, mode: "insensitive" } },
       { client: { name: { contains: filters.q, mode: "insensitive" } } },
       { client: { clientCode: { contains: filters.q, mode: "insensitive" } } },
+      { project: { name: { contains: filters.q, mode: "insensitive" } } },
     ];
   }
 
@@ -48,6 +51,7 @@ export async function listProposals(filters: ProposalFilters = {}): Promise<Prop
       totalAmount: true,
       updatedAt: true,
       client: { select: { name: true } },
+      project: { select: { id: true, name: true } },
     },
   });
 
@@ -60,6 +64,8 @@ export async function listProposals(filters: ProposalFilters = {}): Promise<Prop
     totalAmount: proposal.totalAmount?.toString() ?? null,
     updatedAt: proposal.updatedAt,
     clientName: proposal.client?.name ?? null,
+    projectId: proposal.project?.id ?? null,
+    projectName: proposal.project?.name ?? null,
   }));
 }
 
@@ -75,6 +81,7 @@ export async function getProposalById(id: string) {
       payments: { orderBy: { dueDate: "asc" } },
       schedule: { orderBy: { position: "asc" } },
       package: true,
+      project: { select: { id: true, name: true } },
     },
   });
 }

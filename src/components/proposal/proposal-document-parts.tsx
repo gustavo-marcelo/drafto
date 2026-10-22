@@ -1,5 +1,11 @@
+import type { ReactNode } from "react";
+
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { ProposalDocument, ProposalDocumentItem } from "@/lib/proposal-document";
+import type {
+  ProposalDocument,
+  ProposalDocumentItem,
+  ProposalDocumentSettings,
+} from "@/lib/proposal-document";
 
 const BRAND_NAME = "Proposta.ai";
 
@@ -18,9 +24,16 @@ function contactLine(document: ProposalDocument): string {
     .join(" · ");
 }
 
-export function DocumentHeader({ document }: { document: ProposalDocument }) {
-  const logo = document.settings.logo;
-  const tagline = document.settings.tagline?.trim();
+export function DocumentBrandHeader({
+  settings,
+  meta,
+}: {
+  settings: ProposalDocumentSettings;
+  meta: ReactNode;
+}) {
+  const logo = settings.logo;
+  const tagline = settings.tagline?.trim();
+  const brand = settings.companyName?.trim() || BRAND_NAME;
 
   return (
     <header className="doc-header">
@@ -29,17 +42,26 @@ export function DocumentHeader({ document }: { document: ProposalDocument }) {
           // O documento é renderizado como HTML estático (preview e PDF via Puppeteer),
           // onde o otimizador de imagens do Next não está disponível.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt={companyName(document)} className="doc-logo-img" />
+          <img src={logo} alt={brand} className="doc-logo-img" />
         ) : (
           <div className="doc-logo">P</div>
         )}
         <div>
-          <div className="doc-brand-name">{companyName(document)}</div>
+          <div className="doc-brand-name">{brand}</div>
           {tagline && <div className="doc-brand-tag">{tagline}</div>}
         </div>
       </div>
-      <div className="doc-header-meta">
-        {document.code ? (
+      <div className="doc-header-meta">{meta}</div>
+    </header>
+  );
+}
+
+export function DocumentHeader({ document }: { document: ProposalDocument }) {
+  return (
+    <DocumentBrandHeader
+      settings={document.settings}
+      meta={
+        document.code ? (
           <>
             Proposta <strong>{document.code}</strong>
           </>
@@ -47,9 +69,9 @@ export function DocumentHeader({ document }: { document: ProposalDocument }) {
           <>
             Emissão <strong>{dateLabel(document.issuedAt)}</strong>
           </>
-        )}
-      </div>
-    </header>
+        )
+      }
+    />
   );
 }
 

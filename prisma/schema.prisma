@@ -63,6 +63,38 @@ model Client {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   proposals  Proposal[]
+  projects   Project[]
+}
+
+// ────────────────────────────────────────────────────────────
+// Projetos e documentos anexos (Markdown)
+// ────────────────────────────────────────────────────────────
+
+model Project {
+  id          String            @id @default(cuid())
+  name        String
+  description String
+  clientId    String
+  client      Client            @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  documents   ProjectDocument[]
+  proposals   Proposal[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([clientId])
+  @@index([name])
+}
+
+model ProjectDocument {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
 }
 
 model Resource {
@@ -135,6 +167,9 @@ model Proposal {
   packageId String?
   package   Package? @relation(fields: [packageId], references: [id])
 
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
   modules        ProposalModule[]
   infrastructure ProposalInfrastructure[]
   valueItems     ProposalValueItem[]
@@ -143,6 +178,7 @@ model Proposal {
 
   @@index([status])
   @@index([clientId])
+  @@index([projectId])
 }
 
 model ProposalModule {

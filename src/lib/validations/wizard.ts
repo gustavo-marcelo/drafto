@@ -37,6 +37,7 @@ export const wizardStep1Schema = z.object({
   location: z.string().trim().optional().default(""),
   audience: z.string().trim().optional().default(""),
   clientId: z.string().trim().optional().default(""),
+  projectId: z.string().trim().optional().default(""),
 });
 
 export const wizardStep2Schema = z.object({

@@ -33,8 +33,15 @@ export async function listClients(q?: string) {
       phone: true,
       email: true,
       clientCode: true,
-      _count: { select: { proposals: true } },
+      _count: { select: { proposals: true, projects: true } },
     },
+  });
+}
+
+export async function listClientOptions() {
+  return prisma.client.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, clientCode: true },
   });
 }
 

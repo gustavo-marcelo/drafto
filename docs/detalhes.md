@@ -49,6 +49,14 @@ O cadastro será dividido em quatro etapas:
   3. Valores, aceite e condições.
 - Incluir logo, cabeçalho, rodapé e numeração das páginas.
 
+### 1.5. Gestão de projetos
+
+- Cadastrar projetos com nome, breve descrição e cliente vinculado.
+- Anexar vários documentos em Markdown a cada projeto.
+- Editar o conteúdo no painel, importar arquivos `.md`/`.markdown` e baixar o documento em Markdown.
+- Buscar projetos por nome, descrição, cliente ou código do cliente.
+- Impedir a exclusão de clientes com propostas ou projetos vinculados.
+
 ---
 
 ## 2. Etapas do projeto
