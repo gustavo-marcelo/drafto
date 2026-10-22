@@ -7,6 +7,3 @@
  */
 
 export const APP_COMMIT = process.env.NEXT_PUBLIC_APP_COMMIT || "sem-commit";
-
-/** Rótulo curto exibido no rodapé do documento (ex.: `v a7c1d64`). */
-export const APP_VERSION_LABEL = `v ${APP_COMMIT}`;

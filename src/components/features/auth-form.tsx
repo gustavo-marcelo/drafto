@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { login } from "@/app/actions/auth";
+import { APP_COMMIT } from "@/lib/app-version";
 import type { AuthFormState } from "@/lib/validations/auth";
 
 export function AuthForm() {
@@ -53,6 +54,8 @@ export function AuthForm() {
       >
         {pending ? "Aguarde..." : "Entrar"}
       </button>
+
+      <p className="text-primary-500 text-center text-xs">Versão {APP_COMMIT}</p>
     </form>
   );
 }

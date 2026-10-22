@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { APP_VERSION_LABEL } from "@/lib/app-version";
 import { PROPOSAL_DOCUMENT_CSS } from "@/lib/proposal-document-css";
 import type { ProposalDocument } from "@/lib/proposal-document";
 
@@ -142,13 +141,6 @@ describe("ProposalDocumentView", () => {
     expect(html).toContain('data-doc-page="0"');
     expect(html).toContain("Página 1 de 2");
     expect(html).toContain("Página 2 de 2");
-  });
-
-  it("mostra a versão da aplicação no rodapé", () => {
-    const html = render(baseDocument());
-
-    expect(html).toContain(APP_VERSION_LABEL);
-    expect(html).toContain("doc-footer-version");
   });
 
   it("mantém os itens de operação em sequência na mesma página", () => {

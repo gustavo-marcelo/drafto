@@ -240,7 +240,7 @@ curl -s http://localhost:3000/api/version
 # {"version":"a7c1d64","buildId":"p27QRl5HvVpjI-LH3BuYm","startedAt":"2026-10-21T20:00:00.000Z","node":"v22.14.0"}
 ```
 
-- `version`: commit do Git do **build em execução** (também aparece no rodapé do PDF e do documento público)
+- `version`: commit do Git do **build em execução** (também aparece na tela de login)
 - `buildId`: identificador do `.next/BUILD_ID` — compare com `cat .next/BUILD_ID` para confirmar que o servidor serve o build recém-gerado
 - `startedAt`: quando o processo subiu — se for anterior ao último build, há um processo antigo no ar (`pm2 restart proposta`)
 
