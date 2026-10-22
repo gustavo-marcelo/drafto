@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { ProposalDocument } from "@/lib/proposal-document";
+import { DOC_SELECTORS } from "@/lib/proposal-document-dom";
 import {
   computeDocumentLayout,
   countDocumentPages,
@@ -17,6 +18,8 @@ type ProposalDocumentAutoLayoutProps = {
   document: ProposalDocument;
   includeFooter?: boolean;
   onPageCountChange?: (pageCount: number) => void;
+  /** Nível do título principal do documento (veja `ProposalDocumentView`). */
+  titleHeadingLevel?: "h1" | "h2";
 };
 
 const MAX_ITERATIONS = 6;
@@ -30,6 +33,7 @@ export function ProposalDocumentAutoLayout({
   document,
   includeFooter = true,
   onPageCountChange,
+  titleHeadingLevel = "h1",
 }: ProposalDocumentAutoLayoutProps) {
   const countsKey = `${document.modules.length}:${document.schedule.length}`;
   const [layout, setLayout] = useState<ProposalDocumentLayout>(() =>
@@ -65,7 +69,11 @@ export function ProposalDocumentAutoLayout({
       return;
     }
 
-    const next = computeDocumentLayout(layout, container);
+    const next = computeDocumentLayout({
+      current: layout,
+      root: container,
+      selectors: DOC_SELECTORS,
+    });
 
     if (!isSameDocumentLayout(next, layout)) {
       iterationsRef.current += 1;
@@ -81,7 +89,12 @@ export function ProposalDocumentAutoLayout({
 
   return (
     <div ref={containerRef}>
-      <ProposalDocumentView document={document} includeFooter={includeFooter} layout={layout} />
+      <ProposalDocumentView
+        document={document}
+        includeFooter={includeFooter}
+        layout={layout}
+        titleHeadingLevel={titleHeadingLevel}
+      />
     </div>
   );
 }

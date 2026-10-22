@@ -51,7 +51,39 @@ describe("wizardToDocument", () => {
     const client: ClientOption = { id: "c1", name: "Empresa Exemplo", clientCode: "CL0001.0001" };
     const doc = wizardToDocument(baseWizard(), client);
 
-    expect(doc.client).toEqual({ name: "Empresa Exemplo", clientCode: "CL0001.0001" });
+    expect(doc.client).toEqual({
+      name: "Empresa Exemplo",
+      clientCode: "CL0001.0001",
+      document: null,
+      address: null,
+      contact: null,
+      phone: null,
+      email: null,
+    });
+  });
+
+  it("leva os dados do contratante para o documento", () => {
+    const client: ClientOption = {
+      id: "c1",
+      name: "Empresa Exemplo",
+      clientCode: "CL0001.0001",
+      document: "12.345.678/0001-90",
+      address: "Rua das Flores, 100 · São Paulo/SP",
+      contact: "Maria",
+      phone: "(11) 99999-0000",
+      email: "maria@empresa.com",
+    };
+    const doc = wizardToDocument(baseWizard(), client);
+
+    expect(doc.client).toEqual({
+      name: "Empresa Exemplo",
+      clientCode: "CL0001.0001",
+      document: "12.345.678/0001-90",
+      address: "Rua das Flores, 100 · São Paulo/SP",
+      contact: "Maria",
+      phone: "(11) 99999-0000",
+      email: "maria@empresa.com",
+    });
   });
 
   it("usa null quando não há cliente", () => {

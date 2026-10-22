@@ -1,487 +1,131 @@
-import React, { type ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
-import { formatCurrency, formatDate } from "@/lib/format";
-import type { ProposalDocument, ProposalDocumentItem } from "@/lib/proposal-document";
+import type { ProposalDocument } from "@/lib/proposal-document";
 import {
   countDocumentPages,
   createDefaultDocumentLayout,
+  type ProposalDocumentBlock,
+  type ProposalDocumentBlockKind,
   type ProposalDocumentLayout,
 } from "@/lib/proposal-document-layout";
 
-const BRAND_NAME = "Proposta.ai";
+import {
+  CatalogSection,
+  DisclaimerBlock,
+  DocumentFooter,
+  DocumentHeader,
+  IntroBlock,
+  RequirementsBlock,
+  ScheduleList,
+  ValuesBlock,
+} from "./proposal-document-parts";
 
-function companyName(document: ProposalDocument): string {
-  return document.settings.companyName?.trim() || BRAND_NAME;
-}
-
-function dateLabel(value: string | null | undefined): string {
-  return value ? formatDate(value) : "—";
-}
-
-function Header({ document }: { document: ProposalDocument }) {
-  const logo = document.settings.logo;
-  const tagline = document.settings.tagline?.trim();
-
-  return (
-    <header className="doc-header">
-      <div className="doc-brand">
-        {logo ? (
-          // O documento é renderizado como HTML estático (preview e PDF via Puppeteer),
-          // onde o otimizador de imagens do Next não está disponível.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt={companyName(document)} className="doc-logo-img" />
-        ) : (
-          <div className="doc-logo">P</div>
-        )}
-        <div>
-          <div className="doc-brand-name">{companyName(document)}</div>
-          {tagline && <div className="doc-brand-tag">{tagline}</div>}
-        </div>
-      </div>
-      <div className="doc-header-meta">
-        {document.code ? (
-          <>
-            Proposta <strong>{document.code}</strong>
-          </>
-        ) : (
-          <>
-            Emissão <strong>{dateLabel(document.issuedAt)}</strong>
-          </>
-        )}
-      </div>
-    </header>
-  );
-}
-
-function contactLine(document: ProposalDocument): string {
-  return [document.settings.cnpj, document.settings.phone, document.settings.email]
-    .map((value) => value?.trim())
-    .filter(Boolean)
-    .join(" · ");
-}
-
-function Footer({
-  document,
-  pageNumber,
-  totalPages,
-}: {
+type BlockContext = {
   document: ProposalDocument;
-  pageNumber: number;
-  totalPages: number;
-}) {
-  const contact = contactLine(document);
+  block: ProposalDocumentBlock;
+  /** Quantidade de itens já consumidos do bloco (recursos, infraestrutura, cronograma). */
+  offset: number;
+  titleHeadingLevel: "h1" | "h2";
+};
 
-  return (
-    <footer className="doc-footer">
-      <span>
-        {companyName(document)} — Documento gerado eletronicamente
-        {contact && <span className="doc-footer-contact"> · {contact}</span>}
-      </span>
-      <span className="doc-page-number">
-        Página {pageNumber} de {totalPages}
-      </span>
-    </footer>
-  );
+type BlockRenderer = (context: BlockContext) => ReactNode;
+
+/**
+ * Blocos com itens: o solver pode quebrar o conteúdo em várias páginas e o
+ * offset garante que cada parte renderize apenas os itens que lhe pertencem.
+ */
+const ITEM_SOURCES = {
+  resources: (document: ProposalDocument) => document.modules,
+  infrastructure: (document: ProposalDocument) => document.infrastructure,
+  schedule: (document: ProposalDocument) => document.schedule,
+} as const;
+
+type ItemKind = keyof typeof ITEM_SOURCES;
+
+function isItemKind(kind: ProposalDocumentBlockKind): kind is ItemKind {
+  return kind === "resources" || kind === "infrastructure" || kind === "schedule";
 }
 
-function EventSummary({ document }: { document: ProposalDocument }) {
-  return (
-    <section className="doc-section">
-      <div className="doc-grid doc-grid-3">
-        <div>
-          <div className="doc-field-label">Data do evento</div>
-          <div className="doc-field-value">{dateLabel(document.eventDate)}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">Local</div>
-          <div className="doc-field-value">{document.location || "—"}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">Público estimado</div>
-          <div className="doc-field-value">{document.audience || "—"}</div>
-        </div>
-      </div>
-    </section>
-  );
-}
+const BLOCK_RENDERERS: Record<ProposalDocumentBlockKind, BlockRenderer> = {
+  intro: ({ document, titleHeadingLevel }) => (
+    <IntroBlock document={document} titleHeadingLevel={titleHeadingLevel} />
+  ),
+  resources: ({ document, block, offset }) => (
+    <CatalogSection
+      title="Recursos do sistema de credenciamento"
+      items={sliceItems(document.modules, block, offset)}
+      block="resources"
+    />
+  ),
+  infrastructure: ({ document, block, offset }) => (
+    <CatalogSection
+      title="Infraestrutura e operação"
+      items={sliceItems(document.infrastructure, block, offset)}
+      block="infrastructure"
+    />
+  ),
+  requirements: ({ document }) => <RequirementsBlock document={document} />,
+  schedule: ({ document, block, offset }) => (
+    <ScheduleList items={sliceItems(document.schedule, block, offset)} />
+  ),
+  disclaimer: ({ document }) => <DisclaimerBlock document={document} />,
+  values: ({ document }) => <ValuesBlock document={document} />,
+};
 
-function ClientBlock({ document }: { document: ProposalDocument }) {
-  const client = document.client;
-  return (
-    <section className="doc-section">
-      <h2 className="doc-section-title">Contratante</h2>
-      <div className="doc-grid doc-grid-2">
-        <div>
-          <div className="doc-field-label">Nome / Razão social</div>
-          <div className="doc-field-value">{client?.name || "—"}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">CNPJ / CPF</div>
-          <div className="doc-field-value">{client?.document || "—"}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">Endereço</div>
-          <div className="doc-field-value">{client?.address || "—"}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">Código do cliente</div>
-          <div className="doc-field-value">{client?.clientCode || "—"}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">Contato</div>
-          <div className="doc-field-value">{client?.contact || "—"}</div>
-        </div>
-        <div>
-          <div className="doc-field-label">Data de emissão</div>
-          <div className="doc-field-value">{dateLabel(document.issuedAt)}</div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ItemList({ items, kind }: { items: ProposalDocumentItem[]; kind: string }) {
-  return (
-    <ul className="doc-list">
-      {items.map((item, index) => (
-        <li key={`${item.title}-${index}`} data-doc-item={kind}>
-          <span>
-            <span className="doc-item-title">{item.title}</span>
-            {item.description && (
-              <>
-                <br />
-                <span className="doc-item-desc">{item.description}</span>
-              </>
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function CatalogSection({
-  title,
-  items,
-  block,
-}: {
-  title: string;
-  items: ProposalDocumentItem[];
-  block: "resources" | "infrastructure";
-}) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <section className="doc-section" data-doc-block={block} data-doc-block-count={items.length}>
-      <h2 className="doc-section-title">{title}</h2>
-      <ItemList items={items} kind={block} />
-    </section>
-  );
-}
-
-function ScheduleList({ items }: { items: ProposalDocument["schedule"] }) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <section className="doc-section" data-doc-block="schedule" data-doc-block-count={items.length}>
-      <h2 className="doc-section-title">Cronograma Operacional</h2>
-      <div>
-        {items.map((item, index) => (
-          <div className="doc-schedule-row" key={`${item.date}-${index}`} data-doc-item="schedule">
-            <div className="doc-schedule-date">{item.date}</div>
-            <div>
-              <div className="doc-item-title">{item.title}</div>
-              {item.description && <div className="doc-item-desc">{item.description}</div>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ValueItemsTable({ document }: { document: ProposalDocument }) {
-  if (document.valueItems.length === 0) {
-    return null;
-  }
-
-  const total = document.valueItems.reduce((sum, item) => sum + item.subtotal, 0);
-
-  return (
-    <section className="doc-section">
-      <h2 className="doc-section-title">Composição do valor</h2>
-      <table className="doc-table">
-        <thead>
-          <tr>
-            <th>Descrição</th>
-            <th style={{ textAlign: "right" }}>Qtd.</th>
-            <th style={{ textAlign: "right" }}>Valor unitário</th>
-            <th style={{ textAlign: "right" }}>Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {document.valueItems.map((item, index) => (
-            <tr key={`${item.description}-${index}`}>
-              <td>{item.description}</td>
-              <td className="doc-amount">{item.quantity}</td>
-              <td className="doc-amount">{formatCurrency(item.unitValue)}</td>
-              <td className="doc-amount">{formatCurrency(item.subtotal)}</td>
-            </tr>
-          ))}
-          <tr className="doc-total">
-            <td>Investimento</td>
-            <td />
-            <td />
-            <td className="doc-amount">{formatCurrency(total)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-function FinancialTable({ document }: { document: ProposalDocument }) {
-  return (
-    <section className="doc-section">
-      <h2 className="doc-section-title">Condições comerciais</h2>
-      <table className="doc-table">
-        <tbody>
-          <tr>
-            <td>Descrição do pacote</td>
-            <td className="doc-amount">{document.title}</td>
-          </tr>
-          <tr>
-            <td>Forma de pagamento</td>
-            <td className="doc-amount">{document.paymentMethod || "—"}</td>
-          </tr>
-          <tr>
-            <td>Validade da proposta</td>
-            <td className="doc-amount">{dateLabel(document.validUntil)}</td>
-          </tr>
-          <tr>
-            <td>Custos incluídos</td>
-            <td className="doc-amount">{document.includedCosts || "—"}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-function PaymentSchedule({ document }: { document: ProposalDocument }) {
-  if (document.payments.length === 0) {
-    return null;
-  }
-  return (
-    <section className="doc-section">
-      <h2 className="doc-section-title">Cronograma de pagamento</h2>
-      <table className="doc-table">
-        <thead>
-          <tr>
-            <th>Parcela</th>
-            <th>Vencimento</th>
-            <th style={{ textAlign: "right" }}>Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {document.payments.map((payment, index) => (
-            <tr key={`${payment.dueDate}-${index}`}>
-              <td>{index + 1}</td>
-              <td>{dateLabel(payment.dueDate)}</td>
-              <td className="doc-amount">{formatCurrency(payment.amount)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-function IntroBlock({ document }: { document: ProposalDocument }) {
-  return (
-    <div className="doc-block" data-doc-block="intro">
-      <div className="doc-hero">
-        <h1>{document.title || "Proposta Comercial"}</h1>
-        {document.subtitle && <p className="doc-subtitle">{document.subtitle}</p>}
-      </div>
-
-      <EventSummary document={document} />
-      <ClientBlock document={document} />
-
-      {document.solution && (
-        <section className="doc-section">
-          <h2 className="doc-section-title">Solução proposta</h2>
-          <p className="doc-text">{document.solution}</p>
-        </section>
-      )}
-    </div>
-  );
-}
-
-function RequirementsBlock({ document }: { document: ProposalDocument }) {
-  if (!document.requirements?.trim()) {
-    return null;
-  }
-
-  return (
-    <section className="doc-section" data-doc-block="requirements">
-      <h2 className="doc-section-title">Requisitos pré-evento</h2>
-      <p className="doc-text">{document.requirements}</p>
-    </section>
-  );
-}
-
-function DisclaimerBlock({ document }: { document: ProposalDocument }) {
-  if (!document.disclaimer?.trim()) {
-    return null;
-  }
-
-  return (
-    <section className="doc-section" data-doc-block="disclaimer">
-      <h2 className="doc-section-title">Compromissos e avisos contratuais</h2>
-      <div className="doc-note">{document.disclaimer}</div>
-    </section>
-  );
-}
-
-function ValuesBlock({ document }: { document: ProposalDocument }) {
-  const provider = {
-    name: document.settings.responsible?.trim(),
-    role: document.settings.responsibleRole?.trim(),
-    phone: document.settings.phone?.trim(),
-    email: document.settings.email?.trim(),
-    cnpj: document.settings.cnpj?.trim(),
-  };
-
-  return (
-    <div className="doc-block" data-doc-block="values">
-      <FinancialTable document={document} />
-      <ValueItemsTable document={document} />
-      <PaymentSchedule document={document} />
-
-      {document.acceptanceNote && (
-        <section className="doc-section">
-          <h2 className="doc-section-title">Aceite do contratante</h2>
-          <p className="doc-text">{document.acceptanceNote}</p>
-        </section>
-      )}
-
-      <div className="doc-signature">
-        <div className="doc-signature-line">
-          <div className="doc-signature-name">{companyName(document)}</div>
-          {provider.name && <div className="doc-signature-role">{provider.name}</div>}
-          <div className="doc-signature-role">{provider.role || "Contratada"}</div>
-          {provider.phone && <div className="doc-signature-role">{provider.phone}</div>}
-          {provider.email && <div className="doc-signature-role">{provider.email}</div>}
-          {provider.cnpj && <div className="doc-signature-role">{provider.cnpj}</div>}
-        </div>
-        <div className="doc-signature-line">
-          <div className="doc-signature-name">{document.client?.name || "Contratante"}</div>
-          <div className="doc-signature-role">Contratante — Data: ____/____/________</div>
-        </div>
-      </div>
-    </div>
-  );
+/** Itens do bloco dentro da página: respeita o `count` definido pelo layout. */
+function sliceItems<T>(source: T[], block: ProposalDocumentBlock, offset: number): T[] {
+  const count = block.count ?? source.length - offset;
+  return source.slice(offset, offset + Math.max(0, count));
 }
 
 type ResolvedBlock = { key: string; content: ReactNode };
 
 /**
- * Resolve os blocos do layout em conteúdo, distribuindo os itens de recursos e
- * do cronograma na ordem de leitura do documento.
+ * Resolve os blocos do layout em conteúdo, distribuindo os itens de recursos,
+ * infraestrutura e cronograma na ordem de leitura do documento.
  */
 function resolveLayout(
   layout: ProposalDocumentLayout,
   document: ProposalDocument,
+  titleHeadingLevel: "h1" | "h2",
 ): ResolvedBlock[][] {
-  const pages: ResolvedBlock[][] = [];
-  let resourceOffset = 0;
-  let scheduleOffset = 0;
+  const offsets: Partial<Record<ItemKind, number>> = {};
 
-  for (const blocks of layout.pages) {
-    const resolved: ResolvedBlock[] = [];
+  return layout.pages.map((blocks) =>
+    blocks.map((block) => {
+      const kind = block.kind;
+      const source = isItemKind(kind) ? ITEM_SOURCES[kind] : undefined;
+      const offset = source ? (offsets[kind as ItemKind] ?? 0) : 0;
+      const content = BLOCK_RENDERERS[block.kind]({
+        document,
+        block,
+        offset,
+        titleHeadingLevel,
+      });
 
-    for (const block of blocks) {
-      switch (block.kind) {
-        case "intro": {
-          resolved.push({ key: "intro", content: <IntroBlock document={document} /> });
-          break;
-        }
-        case "resources": {
-          const count = block.count ?? 0;
-          const items = document.modules.slice(resourceOffset, resourceOffset + count);
-          resourceOffset += count;
-          resolved.push({
-            key: `resources-${resourceOffset}`,
-            content: (
-              <CatalogSection
-                title="Recursos do sistema de credenciamento"
-                items={items}
-                block="resources"
-              />
-            ),
-          });
-          break;
-        }
-        case "infrastructure": {
-          resolved.push({
-            key: "infrastructure",
-            content: (
-              <CatalogSection
-                title="Infraestrutura e operação"
-                items={document.infrastructure}
-                block="infrastructure"
-              />
-            ),
-          });
-          break;
-        }
-        case "requirements": {
-          resolved.push({
-            key: "requirements",
-            content: <RequirementsBlock document={document} />,
-          });
-          break;
-        }
-        case "schedule": {
-          const count = block.count ?? 0;
-          const items = document.schedule.slice(scheduleOffset, scheduleOffset + count);
-          scheduleOffset += count;
-          resolved.push({
-            key: `schedule-${scheduleOffset}`,
-            content: <ScheduleList items={items} />,
-          });
-          break;
-        }
-        case "disclaimer": {
-          resolved.push({ key: "disclaimer", content: <DisclaimerBlock document={document} /> });
-          break;
-        }
-        case "values": {
-          resolved.push({ key: "values", content: <ValuesBlock document={document} /> });
-          break;
-        }
+      if (source) {
+        offsets[kind as ItemKind] = offset + (block.count ?? source(document).length - offset);
       }
-    }
 
-    pages.push(resolved);
-  }
-
-  return pages;
+      return { key: `${block.kind}-${offset}`, content };
+    }),
+  );
 }
 
 export function ProposalDocumentView({
   document,
   includeFooter = true,
   layout,
+  titleHeadingLevel = "h1",
 }: {
   document: ProposalDocument;
   includeFooter?: boolean;
   layout?: ProposalDocumentLayout;
+  /**
+   * Nível do título principal do documento. Use "h2" quando o documento é
+   * exibido dentro de uma página que já tem um "h1" (preview do wizard).
+   */
+  titleHeadingLevel?: "h1" | "h2";
 }) {
   const activeLayout =
     layout ??
@@ -491,20 +135,24 @@ export function ProposalDocumentView({
     });
 
   const totalPages = countDocumentPages(activeLayout);
-  const pages = resolveLayout(activeLayout, document);
+  const pages = resolveLayout(activeLayout, document, titleHeadingLevel);
 
   return (
     <div>
       {pages.map((blocks, pageIndex) => (
         <article className="doc-page" key={pageIndex} data-doc-page={pageIndex}>
-          <Header document={document} />
+          <DocumentHeader document={document} />
 
           {blocks.map((block) => (
-            <React.Fragment key={block.key}>{block.content}</React.Fragment>
+            <Fragment key={block.key}>{block.content}</Fragment>
           ))}
 
           {includeFooter && (
-            <Footer document={document} pageNumber={pageIndex + 1} totalPages={totalPages} />
+            <DocumentFooter
+              document={document}
+              pageNumber={pageIndex + 1}
+              totalPages={totalPages}
+            />
           )}
         </article>
       ))}

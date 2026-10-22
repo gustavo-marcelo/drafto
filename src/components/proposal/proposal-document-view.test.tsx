@@ -210,4 +210,89 @@ describe("ProposalDocumentView", () => {
     expect(lastResourceIndex).toBeLessThan(infrastructureIndex);
     expect(html.indexOf("Controle de acesso")).toBeLessThan(html.indexOf("Relatórios"));
   });
+
+  it("exibe o valor total quando não há composição de valor", () => {
+    const html = render(baseDocument({ totalAmount: 12000 }));
+
+    expect(html).toContain("Valor total");
+    expect(html).toContain("12.000,00");
+    expect(html).not.toContain("Composição do valor");
+  });
+
+  it("não exibe o valor total quando há composição de valor", () => {
+    const html = render(
+      baseDocument({
+        totalAmount: 12000,
+        valueItems: [
+          { description: "Licença do sistema", quantity: 1, unitValue: 12000, subtotal: 12000 },
+        ],
+      }),
+    );
+
+    expect(html).not.toContain("Valor total");
+    expect(html).toContain("Investimento");
+  });
+
+  it("exibe os dados completos do contratante", () => {
+    const html = render(
+      baseDocument({
+        client: {
+          name: "Empresa Exemplo",
+          clientCode: "CL0001.0001",
+          document: "12.345.678/0001-90",
+          address: "Rua das Flores, 100 · São Paulo/SP",
+          contact: "Maria",
+        },
+      }),
+    );
+
+    expect(html).toContain("12.345.678/0001-90");
+    expect(html).toContain("Rua das Flores, 100 · São Paulo/SP");
+    expect(html).toContain("Maria");
+  });
+
+  it("usa h1 por padrão e h2 quando o documento é exibido dentro de outra página", () => {
+    const document = baseDocument({ title: "Lançamento Brasília" });
+
+    expect(render(document)).toContain('<h1 class="doc-title">Lançamento Brasília</h1>');
+
+    const html = renderToStaticMarkup(
+      <ProposalDocumentView document={document} titleHeadingLevel="h2" />,
+    );
+    expect(html).toContain('<h2 class="doc-title">Lançamento Brasília</h2>');
+    expect(html).not.toContain("<h1");
+  });
+
+  it("omite o rodapé quando includeFooter é falso", () => {
+    const html = renderToStaticMarkup(
+      <ProposalDocumentView document={baseDocument()} includeFooter={false} />,
+    );
+
+    expect(html).not.toContain("doc-footer");
+    expect(html).not.toContain("Página 1 de");
+  });
+
+  it("respeita o count do bloco de infraestrutura", () => {
+    const document = baseDocument({
+      infrastructure: [{ title: "Totens de autoatendimento" }, { title: "Rede wifi dedicada" }],
+    });
+
+    const html = renderToStaticMarkup(
+      <ProposalDocumentView
+        document={document}
+        layout={{
+          pages: [
+            [{ kind: "intro" }, { kind: "infrastructure", count: 1 }],
+            [{ kind: "infrastructure", count: 1 }],
+            [{ kind: "values" }],
+          ],
+        }}
+      />,
+    );
+
+    expect(html.match(/class="doc-list"/g)).toHaveLength(2);
+    expect(html.indexOf("Totens de autoatendimento")).toBeLessThan(
+      html.indexOf("Rede wifi dedicada"),
+    );
+  });
 });

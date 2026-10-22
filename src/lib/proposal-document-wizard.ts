@@ -33,6 +33,11 @@ export function wizardToDocument(
       ? {
           name: client.name,
           clientCode: client.clientCode ?? null,
+          document: client.document ?? null,
+          address: client.address ?? null,
+          contact: client.contact ?? null,
+          phone: client.phone ?? null,
+          email: client.email ?? null,
         }
       : null,
     modules: data.modules.map((module) => ({

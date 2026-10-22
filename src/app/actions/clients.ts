@@ -4,10 +4,28 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { verifySession } from "@/lib/auth";
+import { formatAddress } from "@/lib/format";
 import { captureServerError } from "@/lib/observability";
 import { prisma } from "@/lib/prisma";
 import { generateUniqueCode } from "@/services/codes";
 import { type ClientActionResult, clientSchema } from "@/lib/validations/client";
+
+/** Dados do cliente que aparecem no documento da proposta. */
+const CLIENT_DOCUMENT_SELECT = {
+  id: true,
+  name: true,
+  clientCode: true,
+  document: true,
+  contact: true,
+  phone: true,
+  email: true,
+  zipCode: true,
+  street: true,
+  number: true,
+  complement: true,
+  city: true,
+  state: true,
+} as const;
 
 export async function saveClient(input: unknown, clientId?: string): Promise<ClientActionResult> {
   await verifySession();
@@ -51,15 +69,27 @@ export async function saveClient(input: unknown, clientId?: string): Promise<Cli
       ? await prisma.client.update({
           where: { id: clientId },
           data: base,
-          select: { id: true, name: true, clientCode: true },
+          select: CLIENT_DOCUMENT_SELECT,
         })
       : await prisma.client.create({
           data: base,
-          select: { id: true, name: true, clientCode: true },
+          select: CLIENT_DOCUMENT_SELECT,
         });
 
     revalidatePath("/dashboard/clientes");
-    return { ok: true, client };
+    return {
+      ok: true,
+      client: {
+        id: client.id,
+        name: client.name,
+        clientCode: client.clientCode,
+        document: client.document,
+        contact: client.contact,
+        phone: client.phone,
+        email: client.email,
+        address: formatAddress(client) || null,
+      },
+    };
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "P2002") {
       return { ok: false, message: "Já existe um cliente com esse código." };

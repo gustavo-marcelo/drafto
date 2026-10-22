@@ -1,4 +1,12 @@
-export const PROPOSAL_DOCUMENT_CSS = `
+/**
+ * Estilos do documento da proposta.
+ *
+ * O CSS é gerado como string e injetado na página (preview do wizard, página
+ * pública e HTML do PDF), por isso fica separado em blocos temáticos. A ordem
+ * dos blocos importa: cada um só depende dos anteriores.
+ */
+
+const DOCUMENT_CSS_BASE = `
   :root {
     --doc-primary: #123b36;
     --doc-primary-700: #002824;
@@ -54,7 +62,9 @@ export const PROPOSAL_DOCUMENT_CSS = `
   }
 
   @page { size: A4; margin: 0; }
+`;
 
+const DOCUMENT_CSS_HEADER = `
   .doc-header {
     display: flex;
     align-items: center;
@@ -124,7 +134,9 @@ export const PROPOSAL_DOCUMENT_CSS = `
   }
 
   .doc-footer-contact { color: var(--doc-muted); }
+`;
 
+const DOCUMENT_CSS_CONTENT = `
   .doc-section { margin-bottom: 5mm; }
   .doc-section:last-child { margin-bottom: 0; }
 
@@ -140,7 +152,7 @@ export const PROPOSAL_DOCUMENT_CSS = `
   }
 
   .doc-hero { margin-bottom: 5mm; }
-  .doc-hero h1 {
+  .doc-hero .doc-title {
     font-size: 19pt;
     line-height: 1.15;
     color: var(--doc-primary);
@@ -202,7 +214,9 @@ export const PROPOSAL_DOCUMENT_CSS = `
     color: var(--doc-primary);
     white-space: nowrap;
   }
+`;
 
+const DOCUMENT_CSS_VALUES = `
   .doc-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
   .doc-table th {
     text-align: left;
@@ -240,22 +254,13 @@ export const PROPOSAL_DOCUMENT_CSS = `
     border-radius: 0 1.5mm 1.5mm 0;
   }
 
-  .doc-terms { list-style: none; margin: 0; padding: 0; }
-  .doc-terms li {
-    font-size: 9pt;
-    line-height: 1.5;
-    padding: 1.2mm 0;
-    color: var(--doc-ink);
-    display: flex;
-    gap: 2mm;
-  }
-  .doc-terms li::before { content: "•"; color: var(--doc-accent-700); font-weight: 700; }
-
   .doc-signature { margin-top: 8mm; display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; }
   .doc-signature-line { border-top: 1px solid var(--doc-ink); padding-top: 2mm; }
   .doc-signature-line .doc-signature-role { font-size: 8.5pt; color: var(--doc-muted); }
   .doc-signature-line .doc-signature-name { font-size: 9pt; color: var(--doc-ink); margin-bottom: 8mm; }
+`;
 
+const DOCUMENT_CSS_SHELLS = `
   .doc-public-shell { padding-bottom: 10mm; }
   .doc-public-bar {
     position: sticky;
@@ -301,3 +306,11 @@ export const PROPOSAL_DOCUMENT_CSS = `
   }
   .doc-preview-scale .doc-page + .doc-page { margin-top: 8mm; }
 `;
+
+export const PROPOSAL_DOCUMENT_CSS = [
+  DOCUMENT_CSS_BASE,
+  DOCUMENT_CSS_HEADER,
+  DOCUMENT_CSS_CONTENT,
+  DOCUMENT_CSS_VALUES,
+  DOCUMENT_CSS_SHELLS,
+].join("\n");

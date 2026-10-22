@@ -372,6 +372,7 @@ export function ProposalWizard({
                   <ProposalDocumentAutoLayout
                     document={previewDocument}
                     onPageCountChange={setPageCount}
+                    titleHeadingLevel="h2"
                   />
                 </div>
               </div>

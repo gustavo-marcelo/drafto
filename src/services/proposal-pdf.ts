@@ -4,6 +4,7 @@ import { ProposalDocumentView } from "@/components/proposal/proposal-document-vi
 import { logger } from "@/lib/logger";
 import { PROPOSAL_DOCUMENT_CSS } from "@/lib/proposal-document-css";
 import type { ProposalDocument } from "@/lib/proposal-document";
+import { DOC_SELECTORS } from "@/lib/proposal-document-dom";
 import {
   computeDocumentLayout,
   createDefaultDocumentLayout,
@@ -55,7 +56,10 @@ export async function renderProposalPdf(document: ProposalDocument): Promise<Buf
       await page.setContent(await buildHtml(document, layout), { waitUntil: "load" });
       await page.emulateMediaType("print");
 
-      const next = await page.evaluate(computeDocumentLayout, layout);
+      const next = await page.evaluate(computeDocumentLayout, {
+        current: layout,
+        selectors: DOC_SELECTORS,
+      });
 
       if (isSameDocumentLayout(next, layout)) {
         break;

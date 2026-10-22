@@ -98,3 +98,25 @@ test.describe("PDF da proposta seed", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Evento Lançamento");
   });
 });
+
+test.describe("Hierarquia de títulos do documento", () => {
+  test("o preview do wizard usa h2 e a página mantém um único h1", async ({ authedPage: page }) => {
+    await page.goto("/dashboard/propostas/nova");
+    await expect(page.getByRole("heading", { level: 1, name: "Nova proposta" })).toBeVisible();
+
+    const title = `E2E Títulos ${Date.now()}`;
+    await page.getByLabel("Título da proposta / evento").fill(title);
+
+    const preview = page.locator(".doc-preview-scale");
+    await expect(preview.locator("h2.doc-title")).toContainText(title);
+    await expect(preview.locator("h1")).toHaveCount(0);
+    await expect(page.locator("h1")).toHaveCount(1);
+  });
+
+  test("a página pública mantém o título do documento como h1", async ({ page }) => {
+    await page.goto(`/p/${SEED_SHARE_ID}`);
+
+    await expect(page.locator("h1.doc-title")).toHaveCount(1);
+    await expect(page.locator("h1.doc-title")).toContainText("Evento Lançamento");
+  });
+});

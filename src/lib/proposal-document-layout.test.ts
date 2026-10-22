@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { DOC_SELECTORS } from "./proposal-document-dom";
 import {
   computeDocumentLayout,
   countDocumentPages,
@@ -26,11 +27,11 @@ function createBlock(
 
 function createPage(blocks: FakeBlock[], footerTop: number): Element {
   const elements = blocks.map((block) => ({
-    getAttribute: (name: string) => (name === "data-doc-block" ? block.kind : null),
+    getAttribute: (name: string) => (name === DOC_SELECTORS.blockAttribute ? block.kind : null),
     getBoundingClientRect: () =>
       ({ top: block.top, bottom: block.top + block.height, height: block.height }) as DOMRect,
     querySelectorAll: (selector: string) =>
-      selector === "[data-doc-item]"
+      selector === DOC_SELECTORS.item
         ? block.itemHeights.map((height) => ({
             getBoundingClientRect: () => ({ height }) as DOMRect,
           }))
@@ -39,17 +40,17 @@ function createPage(blocks: FakeBlock[], footerTop: number): Element {
 
   return {
     querySelector: (selector: string) =>
-      selector === ".doc-footer"
+      selector === DOC_SELECTORS.footer
         ? { getBoundingClientRect: () => ({ top: footerTop }) as DOMRect }
         : null,
-    querySelectorAll: (selector: string) => (selector === "[data-doc-block]" ? elements : []),
+    querySelectorAll: (selector: string) => (selector === DOC_SELECTORS.block ? elements : []),
     getBoundingClientRect: () => ({ top: 0, bottom: footerTop }) as DOMRect,
   } as unknown as Element;
 }
 
 function createScope(pages: Element[]): ParentNode {
   return {
-    querySelectorAll: (selector: string) => (selector === ".doc-page" ? pages : []),
+    querySelectorAll: (selector: string) => (selector === DOC_SELECTORS.page ? pages : []),
   } as unknown as ParentNode;
 }
 
@@ -99,7 +100,7 @@ describe("proposal-document-layout", () => {
       createPage([createBlock("values", 100, 600)], 800),
     ]);
 
-    const next = computeDocumentLayout(layout, scope);
+    const next = computeDocumentLayout({ current: layout, root: scope, selectors: DOC_SELECTORS });
 
     expect(next.pages).toHaveLength(2);
     expect(next.pages[0]).toEqual([
@@ -126,7 +127,7 @@ describe("proposal-document-layout", () => {
       createPage([createBlock("values", 100, 600)], 800),
     ]);
 
-    const next = computeDocumentLayout(layout, scope);
+    const next = computeDocumentLayout({ current: layout, root: scope, selectors: DOC_SELECTORS });
 
     const resourceBlocks = next.pages.flat().filter((block) => block.kind === "resources");
     expect(resourceBlocks.length).toBeGreaterThan(1);
@@ -148,7 +149,7 @@ describe("proposal-document-layout", () => {
       ),
     ]);
 
-    const next = computeDocumentLayout(layout, scope);
+    const next = computeDocumentLayout({ current: layout, root: scope, selectors: DOC_SELECTORS });
 
     expect(next.pages[next.pages.length - 1]).toEqual([{ kind: "values" }]);
     expect(next.pages.flat().filter((block) => block.kind === "values")).toHaveLength(1);
@@ -158,7 +159,9 @@ describe("proposal-document-layout", () => {
     const layout: ProposalDocumentLayout = { pages: [[{ kind: "values" }]] };
     const scope = createScope([]);
 
-    expect(computeDocumentLayout(layout, scope)).toBe(layout);
+    expect(computeDocumentLayout({ current: layout, root: scope, selectors: DOC_SELECTORS })).toBe(
+      layout,
+    );
   });
 
   it("preserva blocos sem conteúdo no layout", () => {
@@ -176,7 +179,7 @@ describe("proposal-document-layout", () => {
       createPage([createBlock("values", 100, 600)], 800),
     ]);
 
-    const next = computeDocumentLayout(layout, scope);
+    const next = computeDocumentLayout({ current: layout, root: scope, selectors: DOC_SELECTORS });
 
     expect(next.pages[0]).toEqual([
       { kind: "intro" },
@@ -202,7 +205,7 @@ describe("proposal-document-layout", () => {
       createPage([createBlock("values", 100, 600)], 800),
     ]);
 
-    const next = computeDocumentLayout(layout, scope);
+    const next = computeDocumentLayout({ current: layout, root: scope, selectors: DOC_SELECTORS });
 
     expect(next.pages[0]).toEqual([{ kind: "intro" }, { kind: "resources", count: 6 }]);
     expect(next.pages[1]).toEqual([

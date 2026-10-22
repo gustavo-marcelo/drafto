@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Prisma, ProposalStatus } from "@prisma/client";
 
+import { formatAddress } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
 export type ProposalListItem = {
@@ -95,10 +96,35 @@ export async function getProposalByShareId(shareId: string) {
 export type ProposalFull = NonNullable<Awaited<ReturnType<typeof getProposalById>>>;
 
 export async function listClients() {
-  return prisma.client.findMany({
+  const clients = await prisma.client.findMany({
     orderBy: { name: "asc" },
-    select: { id: true, name: true, clientCode: true },
+    select: {
+      id: true,
+      name: true,
+      clientCode: true,
+      document: true,
+      contact: true,
+      phone: true,
+      email: true,
+      zipCode: true,
+      street: true,
+      number: true,
+      complement: true,
+      city: true,
+      state: true,
+    },
   });
+
+  return clients.map((client) => ({
+    id: client.id,
+    name: client.name,
+    clientCode: client.clientCode,
+    document: client.document,
+    contact: client.contact,
+    phone: client.phone,
+    email: client.email,
+    address: formatAddress(client) || null,
+  }));
 }
 
 export async function listPackages() {

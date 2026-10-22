@@ -6,8 +6,11 @@
  * navegador (preview do wizard, HTML público e geração do PDF via Puppeteer)
  * porque depende do tamanho real do texto renderizado. `computeDocumentLayout`
  * é autossuficiente (sem imports e sem funções externas): ela é serializada
- * para dentro do browser pelo Puppeteer.
+ * para dentro do browser pelo Puppeteer, por isso os seletores do DOM chegam
+ * por argumento (`src/lib/proposal-document-dom.ts`).
  */
+
+import type { DocumentSelectors } from "./proposal-document-dom";
 
 export type ProposalDocumentBlockKind =
   "intro" | "resources" | "infrastructure" | "requirements" | "schedule" | "disclaimer" | "values";
@@ -85,11 +88,15 @@ type MeasuredBlock = {
  * O conteúdo flui: os itens de operação continuam na sequência, sem quebra de
  * página forçada, e apenas o bloco de valores começa uma página nova.
  */
-export function computeDocumentLayout(
-  current: ProposalDocumentLayout,
-  root?: ParentNode,
-): ProposalDocumentLayout {
+export function computeDocumentLayout(payload: {
+  current: ProposalDocumentLayout;
+  root?: ParentNode;
+  selectors: DocumentSelectors;
+}): ProposalDocumentLayout {
   type Block = MeasuredBlock;
+
+  const current = payload.current;
+  const selectors = payload.selectors;
 
   // Constantes locais: a função é serializada para o browser e não pode
   // depender de nenhum binding do módulo.
@@ -143,12 +150,12 @@ export function computeDocumentLayout(
   const toLayoutBlock = (block: Block, count: number): ProposalDocumentBlock =>
     divisible(block.kind) ? { kind: block.kind, count } : { kind: block.kind };
 
-  const scope = root ?? (typeof document !== "undefined" ? document : null);
+  const scope = payload.root ?? (typeof document !== "undefined" ? document : null);
   if (!scope) {
     return current;
   }
 
-  const pages = Array.from(scope.querySelectorAll(".doc-page"));
+  const pages = Array.from(scope.querySelectorAll(selectors.page));
   if (pages.length === 0) {
     return current;
   }
@@ -159,10 +166,10 @@ export function computeDocumentLayout(
   let gap = 0;
 
   for (const page of pages) {
-    const footer = page.querySelector(".doc-footer");
+    const footer = page.querySelector(selectors.footer);
     const pageRect = page.getBoundingClientRect();
     const footerTop = footer ? footer.getBoundingClientRect().top : pageRect.bottom;
-    const elements = Array.from(page.querySelectorAll("[data-doc-block]"));
+    const elements = Array.from(page.querySelectorAll(selectors.block));
     const visible = elements.filter((element) => element.getBoundingClientRect().height > 0);
 
     if (visible.length === 0) {
@@ -178,9 +185,9 @@ export function computeDocumentLayout(
     }
 
     for (const element of elements) {
-      const kind = element.getAttribute("data-doc-block") as ProposalDocumentBlockKind;
+      const kind = element.getAttribute(selectors.blockAttribute) as ProposalDocumentBlockKind;
       const rect = element.getBoundingClientRect();
-      const itemHeights = Array.from(element.querySelectorAll("[data-doc-item]")).map(
+      const itemHeights = Array.from(element.querySelectorAll(selectors.item)).map(
         (item) => item.getBoundingClientRect().height,
       );
       const columns = columnsOf(kind);

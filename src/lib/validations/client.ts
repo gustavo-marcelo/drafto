@@ -29,7 +29,21 @@ export const clientSchema = z.object({
 });
 
 export type ClientInput = z.infer<typeof clientSchema>;
-export type ClientOption = { id: string; name: string; clientCode?: string | null };
+
+/**
+ * Cliente selecionável no wizard. Carrega os dados que aparecem no documento
+ * (documento, endereço e contato) para que o preview seja idêntico ao PDF.
+ */
+export type ClientOption = {
+  id: string;
+  name: string;
+  clientCode?: string | null;
+  document?: string | null;
+  address?: string | null;
+  contact?: string | null;
+  phone?: string | null;
+  email?: string | null;
+};
 
 export type ClientActionResult =
   | { ok: true; client: ClientOption }
