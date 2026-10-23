@@ -79,6 +79,7 @@ A visualização dedicada em `/dashboard/projetos/[id]/documentos/[documentId]/v
 - links são abertos em nova aba;
 - na página dedicada, a renderização é server-side; no editor, a biblioteca também é carregada no cliente para atualizar a prévia em tempo real;
 - o botão **Baixar PDF** chama `GET /api/projetos/[id]/documentos/[documentId]/pdf` e gera o arquivo no servidor com Puppeteer, em A4, usando o **mesmo cabeçalho da proposta** (logo, empresa, tagline) e a identificação do projeto/documento;
+- o botão **Baixar .md** faz o download do documento original em Markdown, tanto na visualização quanto no editor;
 - no PDF, os links do Markdown são renderizados como **texto simples**, sem âncoras clicáveis (`MarkdownView` com `plainLinks`), e não há link público/compartilhável do documento;
 - o botão **Imprimir** usa a impressão do navegador com o mesmo layout A4; menus, barra de ações e navegação do dashboard são ocultados;
 - os estilos de impressão ficam em `src/lib/project-document-css.ts` e reutilizam o cabeçalho da proposta (`DocumentBrandHeader`).
@@ -100,16 +101,16 @@ A associação é opcional. Ao excluir o projeto, as propostas continuam existin
 
 ## 6. Implementação
 
-| Camada         | Arquivo(s)                                                                                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validação      | `src/lib/validations/project.ts`                                                                                                                                                |
-| Serviços       | `src/services/projects.ts`, `src/services/clients.ts`, `src/services/project-document-pdf.ts`                                                                                   |
-| Server Actions | `src/app/actions/projects.ts`                                                                                                                                                   |
-| Componentes    | `src/components/features/project-form.tsx`, `project-document-form.tsx`, `markdown-view.tsx`, `print-button.tsx`, `project-row-actions.tsx`, `project-document-row-actions.tsx` |
-| Estilos        | `src/lib/project-document-css.ts`, `src/lib/proposal-document-css.ts`                                                                                                           |
-| Páginas        | `src/app/dashboard/projetos/**`                                                                                                                                                 |
-| API            | `src/app/api/projetos/[id]/documentos/[documentId]/pdf/route.ts`                                                                                                                |
-| Navegação      | `src/components/layout/dashboard-shell.tsx` (ícone `IconFolder`)                                                                                                                |
+| Camada         | Arquivo(s)                                                                                                                                                                                                      |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validação      | `src/lib/validations/project.ts`                                                                                                                                                                                |
+| Serviços       | `src/services/projects.ts`, `src/services/clients.ts`, `src/services/project-document-pdf.ts`                                                                                                                   |
+| Server Actions | `src/app/actions/projects.ts`                                                                                                                                                                                   |
+| Componentes    | `src/components/features/project-form.tsx`, `project-document-form.tsx`, `markdown-view.tsx`, `markdown-download-button.tsx`, `print-button.tsx`, `project-row-actions.tsx`, `project-document-row-actions.tsx` |
+| Estilos        | `src/lib/project-document-css.ts`, `src/lib/proposal-document-css.ts`                                                                                                                                           |
+| Páginas        | `src/app/dashboard/projetos/**`                                                                                                                                                                                 |
+| API            | `src/app/api/projetos/[id]/documentos/[documentId]/pdf/route.ts`                                                                                                                                                |
+| Navegação      | `src/components/layout/dashboard-shell.tsx` (ícone `IconFolder`)                                                                                                                                                |
 
 ### Server Actions
 
@@ -132,7 +133,7 @@ A associação é opcional. Ao excluir o projeto, as propostas continuam existin
 ## 7. Testes
 
 - `src/lib/validations/project.test.ts` cobre validação de projeto e de documento.
-- `e2e/projects.spec.ts` cobre o fluxo de criação do projeto, anexo, visualização e edição de documento Markdown, associação de proposta ao projeto (e acesso aos documentos pelo detalhe da proposta) e exclusão do projeto.
+- `e2e/projects.spec.ts` cobre o fluxo de criação do projeto, anexo, visualização e edição de documento Markdown, download do `.md`, associação de proposta ao projeto (e acesso aos documentos pelo detalhe da proposta) e exclusão do projeto.
 - `npm run test`, `npm run typecheck` e `npm run lint` devem passar antes do commit.
 
 ## 8. Evoluções possíveis

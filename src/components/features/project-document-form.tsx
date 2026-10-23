@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useDeferredValue, useState, useTransition } from "react";
 
 import { saveProjectDocument } from "@/app/actions/projects";
+import { MarkdownDownloadButton } from "@/components/features/markdown-download-button";
 import { MarkdownView } from "@/components/features/markdown-view";
 import { Field, inputClass } from "@/components/ui/field";
-import { slugify } from "@/lib/catalog";
 import type { ProjectDocumentInput } from "@/lib/validations/project";
 
 const EMPTY: ProjectDocumentInput = {
@@ -49,17 +49,6 @@ export function ProjectDocumentForm({
     } catch {
       setMessage("Não foi possível ler o arquivo selecionado.");
     }
-  }
-
-  function downloadMarkdown() {
-    const filename = `${slugify(form.title) || "documento"}.md`;
-    const blob = new Blob([form.content], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
   }
 
   function submit() {
@@ -115,13 +104,11 @@ export function ProjectDocumentForm({
                 className="text-primary-700 file:border-primary-200 file:text-primary-800 hover:file:bg-primary-50 text-sm file:mr-3 file:rounded-md file:border file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:transition-colors"
               />
               {form.content && (
-                <button
-                  type="button"
-                  onClick={downloadMarkdown}
+                <MarkdownDownloadButton
+                  title={form.title}
+                  content={form.content}
                   className="border-primary-200 text-primary-800 hover:bg-primary-50 rounded-md border px-3 py-2 text-sm transition-colors"
-                >
-                  Baixar .md
-                </button>
+                />
               )}
             </div>
             <p className="text-primary-600 text-xs">

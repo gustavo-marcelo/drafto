@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { MarkdownDownloadButton } from "@/components/features/markdown-download-button";
 import { MarkdownView } from "@/components/features/markdown-view";
 import { PrintButton } from "@/components/features/print-button";
 import { DocumentBrandHeader } from "@/components/proposal/proposal-document-parts";
@@ -51,6 +52,7 @@ export default async function ProjectDocumentViewPage({ params }: { params: Para
             >
               Baixar PDF
             </a>
+            <MarkdownDownloadButton title={document.title} content={document.content} />
             <PrintButton />
             <Link
               href={`/dashboard/projetos/${project.id}/documentos/${document.id}`}

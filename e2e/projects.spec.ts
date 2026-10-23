@@ -1,4 +1,6 @@
 import "dotenv/config";
+import { readFileSync } from "node:fs";
+
 import { expect, test } from "./fixtures";
 import { prisma } from "../src/lib/prisma";
 
@@ -68,7 +70,16 @@ test.describe("Projetos e documentos Markdown", () => {
     await expect(page.locator(".doc-header")).toContainText("Documento");
     await expect(page.locator(".doc-header")).toContainText("Escopo do projeto");
     await expect(page.getByRole("link", { name: "Baixar PDF" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Baixar .md" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Imprimir" })).toBeVisible();
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Baixar .md" }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe("escopo-do-projeto.md");
+    const downloadedPath = await download.path();
+    expect(downloadedPath).not.toBeNull();
+    expect(readFileSync(downloadedPath!, "utf8")).toContain("# Escopo");
 
     await page.emulateMedia({ media: "print" });
     await expect(page.locator(".doc-header")).toBeVisible();
