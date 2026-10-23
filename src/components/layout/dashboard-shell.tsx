@@ -25,8 +25,8 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Propostas", icon: IconFileText, exact: true },
   { href: "/dashboard/projetos", label: "Projetos", icon: IconFolder },
+  { href: "/dashboard", label: "Propostas", icon: IconFileText, exact: true },
   { href: "/dashboard/clientes", label: "Clientes", icon: IconUsers },
   { href: "/dashboard/pacotes", label: "Pacotes", icon: IconPackage },
   { href: "/dashboard/recursos", label: "Recursos", icon: IconLayers },
