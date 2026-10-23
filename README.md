@@ -101,6 +101,7 @@ prisma/           # schema e migrações
 
 - [Especificação](./docs/especificacao.md)
 - [Projetos e documentos Markdown](./docs/projetos.md)
+- [Estado atual e pendências](./docs/estado-atual.md)
 - [Plano de desenvolvimento](./docs/plano-de-desenvolvimento.md)
 - [Deploy e observabilidade](./docs/deploy-e-observabilidade.md)
 - [Deploy no Raspberry Pi](./docs/deploy-raspberry.md)
