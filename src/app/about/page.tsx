@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Sobre — Proposta.ai",
-  description: "O que é o Proposta.ai e quem é o autor do projeto.",
+  title: "Sobre — Drafto",
+  description: "O que é o Drafto e quem é o autor do projeto.",
 };
 
 const FEATURES = [
@@ -22,7 +22,7 @@ export default function AboutPage() {
     <main className="bg-primary-50 flex flex-1 flex-col items-center p-8">
       <div className="w-full max-w-2xl">
         <div className="border-primary-100 rounded-lg border bg-white p-8">
-          <h1 className="text-primary-900 text-2xl font-semibold">Sobre o Proposta.ai</h1>
+          <h1 className="text-primary-900 text-2xl font-semibold">Sobre o Drafto</h1>
           <p className="text-primary-700 mt-3 leading-relaxed">
             Gerador de propostas comerciais para empresas de credenciamento e gestão de eventos.
             Cadastre clientes, pacotes e recursos uma vez e monte propostas completas em minutos,
@@ -41,7 +41,7 @@ export default function AboutPage() {
 
           <h2 className="text-primary-900 mt-8 text-lg font-semibold">O autor</h2>
           <p className="text-primary-900 mt-3 font-medium">Gustavo Marcelo</p>
-          <p className="text-primary-700">Criador e desenvolvedor do Proposta.ai.</p>
+          <p className="text-primary-700">Criador e desenvolvedor do Drafto.</p>
           <a
             href="mailto:gustavo@espalha.ai"
             className="text-primary-600 hover:text-primary-800 mt-1 inline-block text-sm underline-offset-4 hover:underline"

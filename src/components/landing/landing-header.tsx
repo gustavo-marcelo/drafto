@@ -17,9 +17,7 @@ export function LandingHeader() {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.png" alt="" width={32} height={32} preload className="h-8 w-8" />
-          <span className="text-primary-900 text-base font-semibold tracking-tight">
-            Proposta.ai
-          </span>
+          <span className="text-primary-900 text-base font-semibold tracking-tight">Drafto</span>
         </Link>
 
         <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">

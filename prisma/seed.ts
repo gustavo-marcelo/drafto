@@ -1,12 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
+
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 
 import { DEFAULT_INFRASTRUCTURES, DEFAULT_RESOURCES } from "../src/lib/catalog";
+import { PrismaClient } from "../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+});
 
 async function main() {
-  const adminEmail = (process.env.ADMIN_EMAIL ?? "demo@destrava.ai").toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL ?? "demo@drafto.ai").toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD ?? "proposta123";
   const adminName = process.env.ADMIN_NAME ?? "Usuário Demo";
   const passwordHash = await bcrypt.hash(adminPassword, 10);
@@ -22,13 +27,13 @@ async function main() {
   });
 
   const demo =
-    adminEmail === "demo@destrava.ai"
+    adminEmail === "demo@drafto.ai"
       ? user
       : await prisma.user.upsert({
-          where: { email: "demo@destrava.ai" },
+          where: { email: "demo@drafto.ai" },
           update: {},
           create: {
-            email: "demo@destrava.ai",
+            email: "demo@drafto.ai",
             name: "Usuário Demo",
             passwordHash: await bcrypt.hash("proposta123", 10),
           },

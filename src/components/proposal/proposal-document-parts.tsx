@@ -7,7 +7,7 @@ import type {
   ProposalDocumentSettings,
 } from "@/lib/proposal-document";
 
-const BRAND_NAME = "Proposta.ai";
+const BRAND_NAME = "Drafto";
 
 export function companyName(document: ProposalDocument): string {
   return document.settings.companyName?.trim() || BRAND_NAME;

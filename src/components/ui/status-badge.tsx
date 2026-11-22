@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/generated/prisma/enums";
 
 import { STATUS_LABELS, STATUS_STYLES } from "@/lib/proposal-status";
 

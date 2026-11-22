@@ -1,5 +1,11 @@
 # Plano de desenvolvimento — Gerador de Propostas Comerciais
 
+> **Documento histórico (planejamento inicial).** Para o estado atual do projeto,
+> consulte [plano de desenvolvimento](./plano-de-desenvolvimento.md),
+> [especificação](./especificacao.md) e [estado atual](./estado-atual.md).
+> Itens abaixo foram superados — por exemplo, o PDF hoje usa paginação dinâmica
+> em A4 (não um número fixo de três páginas) e o app se chama **Drafto**.
+
 Com base na especificação, a ferramenta deve permitir **criar, editar, acompanhar e exportar propostas comerciais em PDF**, padronizando informações do evento, serviços, equipamentos, valores e condições.
 
 ## 1. Funcionalidades previstas

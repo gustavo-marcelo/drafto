@@ -1,4 +1,4 @@
-# 🗺️ Plano de Desenvolvimento — Proposta.ai
+# 🗺️ Plano de Desenvolvimento — Drafto
 
 ## 1. Visão Geral
 
@@ -8,7 +8,7 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 **Cronograma estimado:** 8 a 10 semanas (1 dev full-stack).
 
-**Status atual (20/10/2026):** Fases 0–5 concluídas. Fase 6 em andamento — 6.1 (Vitest), 6.2 (Playwright), 6.4 (segredos) e 6.5 (observabilidade) concluídas.
+**Status atual (22/11/2026):** Fases 0–5 concluídas. Fase 6 em andamento — 6.1 (Vitest), 6.2 (Playwright), 6.4 (segredos) e 6.5 (observabilidade) concluídas; 6.3 (Docker standalone) e 6.6 (deploy final) pendentes. Em 22/11 o projeto passou a usar Next.js 16.4.6, React 19.3.1 e Prisma 7.10.1 (client gerado em `src/generated/prisma`), além de adotar o nome **Drafto**.
 
 ---
 
@@ -29,9 +29,9 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 **Notas de implementação:**
 
-- Stack efetiva: Next.js 16.4.2, React 19, Tailwind v4 (tokens via `@theme`), Prisma 6.19.3.
+- Stack efetiva (22/11/2026): Next.js 16.4.6, React 19.3.1, Tailwind v4.3.5 (tokens via `@theme`), Prisma 7.10.1, TypeScript 6 e Vitest 5.
 - Banco local: `postgresql://proposta@localhost:5432/propostadb`.
-- Prisma 8 (RC) foi descartado por ser release candidate; fixado em 6.x (API estável).
+- Prisma 8 (RC) continua descartado por ser release candidate. O projeto usou Prisma 6.x até 22/10 e migrou para o 7.10.1 (stable) em 22/11: generator `prisma-client` com saída `src/generated/prisma`, driver adapter `@prisma/adapter-pg`, URL em `prisma.config.ts` (via `env("DATABASE_URL")`) e scripts cron em `.ts` executados com `tsx`.
 - CI roda sobre Postgres 16 em container e executa `migrate deploy` + lint + typecheck + build.
 - **Reorganização (20/10):** banco recriado do zero com migração única `20261020192559_init` (13 migrações incrementais esmagadas), `prisma/schema.prisma` reescrito em seções comentadas (semântica idêntica — validada com `migrate diff`) e configuração migrada de `package.json#prisma` para `prisma.config.ts` (+ `dotenv` como devDependency).
 
@@ -53,7 +53,7 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 - Auth própria com `bcryptjs` (hash) + `jose` (JWT) + cookie de sessão — não foi usada lib de auth de terceiros.
 - Modelos no schema: `User`, `Resource`, `Infrastructure`, `Client`, `Package`, `Proposal`, `ProposalModule`, `ProposalInfrastructure`, `Payment` (enum `ProposalStatus`).
 - **⚠️ 1.3 — Divergência do plano:** a proteção foi feita com `verifySession()` chamado em **cada** `page.tsx` e Server Action do dashboard **e** por `src/proxy.ts` (equivalente ao `middleware.ts` no Next 16 — renomeado para `proxy` nesta versão). Funciona, mas as checagens por página/action são repetitivas — centralizar é melhoria recomendada (ver §7).
-- Seed popula usuário demo (`demo@destrava.ai` / `proposta123`), cliente, pacote e proposta de exemplo.
+- Seed popula usuário demo (`demo@drafto.ai` / `proposta123`), cliente, pacote e proposta de exemplo.
 
 ---
 
@@ -142,8 +142,8 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 **Notas de implementação:**
 
 - **5.1 ✅:** máquina de transições em `lib/proposal-status.ts` (`PROPOSAL_TRANSITIONS`, `canTransition`, `allowedStatuses`); Server Action `updateProposalStatus` valida a transição antes de gravar; `ProposalStatusControl` no cabeçalho da edição renderiza **apenas as opções permitidas** para o status atual (com toast de sucesso/erro). Enum ampliado com `COMPLETED`/`CANCELLED`; label `APPROVED` = "Aceita". Reabrir volta ao `Rascunho`; `EXPIRED` é exclusivamente automático.
-- **5.2 ✅:** `services/expiration.ts` (`expireOverdueProposals`: `SENT` + `validUntil < hoje`) chamado lazy no carregamento do `dashboard/page.tsx` e da edição, mais script cron `npm run db:expire` (`scripts/expire-proposals.mjs`).
-- **Link público na duplicação:** `duplicateProposal` gera um novo `shareId` para a cópia (antes a cópia ficava sem link e sem as ações "Abrir link público"/"Copiar link"); o script idempotente `npm run db:share-ids` (`scripts/ensure-share-ids.mjs`) completa propostas antigas que ficaram sem `shareId`.
+- **5.2 ✅:** `services/expiration.ts` (`expireOverdueProposals`: `SENT` + `validUntil < hoje`) chamado lazy no carregamento do `dashboard/page.tsx` e da edição, mais script cron `npm run db:expire` (`scripts/expire-proposals.ts`).
+- **Link público na duplicação:** `duplicateProposal` gera um novo `shareId` para a cópia (antes a cópia ficava sem link e sem as ações "Abrir link público"/"Copiar link"); o script idempotente `npm run db:share-ids` (`scripts/ensure-share-ids.ts`) completa propostas antigas que ficaram sem `shareId`.
 - **5.3 ✅:** `sonner` instalado e `<Toaster>` no layout raiz; toasts no salvar do wizard, na mudança de status, nos textos pré-definidos (save/delete **otimistas** com snapshot/revert), em duplicar/excluir proposta e nos exclusões de cliente/pacote/recurso — todos disparados **antes** do `redirect()` da Server Action, sobrevivendo à navegação.
 - **5.4 ✅:** contraste AA já validado na Fase 5/paleta; nesta etapa: `:focus-visible` global (outline primary), skip link "Pular para o conteúdo" (`#conteudo`) no dashboard, `aria-label` na navegação e nos filtros, `scope="col"` nos `<th>`, `aria-hidden` nos separadores do wizard, `<main>` nas páginas públicas. **Auditoria axe-core em 10 páginas: 0 violações** (qualquer impacto).
 - **5.5 ✅:** scripts `npm run analyze` (`next build --analyze`) e `next analyze`; pior rota (edição de proposta) com 665 KB de JS na primeira carga (**194 KB gzip**), baseline das demais ~502 KB (~145 KB gzip) — composição: react-dom ~72 KB gz + runtime Next ~36 KB + zod ~30 KB gz + sonner ~13 KB gz. Fonts já self-hosted via `next/font/google` (Geist). Web Vitals medidos em produção (local): TTFB 3–14 ms, FCP 28–156 ms, LCP 56–372 ms — todos na faixa "good". Oportunidade futura: schemas Zod importados por componentes client (~30 KB gz) poderiam ficar server-only.
@@ -170,6 +170,7 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 - **CI:** job `quality` agora roda `npm run test`; novo job `e2e` sobe Postgres, aplica `migrate deploy` + `db:seed`, instala Chromium (`playwright install --with-deps`) e roda `npm run test:e2e`, publicando o `playwright-report` como artefato.
 - **6.4 ✅:** validação de env com Zod em `src/lib/env.ts` (`getEnv()`, cacheado, falha cedo com mensagens por variável); `SESSION_SECRET` exige ≥32 caracteres; `types/env.d.ts` ampliado (`SENTRY_*`, `LOG_LEVEL`, `CI`, `E2E_PORT`). `.env.example` reescrito e comentado (obrigatórias × opcionais + como gerar segredos). Guia completo em `docs/deploy-e-observabilidade.md`. +2 arquivos de teste (`env.test.ts`, `monitoring.test.ts`).
 - **6.5 ✅:** logger estruturado `pino` (`src/lib/logger.ts`) com redaction de segredos e `pino-pretty` em dev; integrado em `services/proposal-pdf.ts`, `actions/proposals.ts`, `actions/clients.ts` e no `onRequestError` global (`src/instrumentation.ts`). Sentry **opcional via DSN** (`@sentry/nextjs` v11): `instrumentation.ts` (server node/edge) + `instrumentation-client.ts` (browser + breadcrumbs de navegação), `captureServerError` (`lib/observability.ts`) e `reportClientError` (`lib/report-client-error.ts`). Error boundaries novos: `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` (e `dashboard/error.tsx` instrumentado) — todos no-op sem DSN.
+- **22/11 (fora das etapas acima):** rebrand de `Proposta.ai`/`destrava.ai` para **Drafto** (nome do pacote, metadados, textos da landing, e-mails do seed e `service` dos logs) e workflow `.github/workflows/version-bump.yml`, que incrementa a versão patch em `package.json`/`package-lock.json` a cada merge na `main` e commita com `[skip ci]`. Ver [README](../README.md#fluxo-de-branches-e-versão).
 
 ---
 
@@ -237,3 +238,4 @@ Sem 10 ████ Fase 6 — Testes e Deploy     🟡
 1. **Reduzir repetição de `verifySession`** — `src/proxy.ts` já protege rotas; avaliar centralizar as checagens por camada nas páginas/actions.
 2. **Escapar Zod do bundle client** — schemas usados só no server reduziriam ~30 KB gzip da primeira carga.
 3. **Configurar produção (6.3/6.6)** — Docker standalone e deploy final com handoff.
+4. **Revalidar E2E após o upgrade** — os 32 cenários Playwright foram executados pela última vez em 23/10, antes da migração para Prisma 7.

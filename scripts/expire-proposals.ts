@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
-import { PrismaClient } from "@prisma/client";
+
+import { PrismaPg } from "@prisma/adapter-pg";
+
+import { PrismaClient } from "../src/generated/prisma/client";
 
 for (const raw of readFileSync(new URL("../.env", import.meta.url), "utf8").split("\n")) {
   const line = raw.trim();
@@ -16,7 +19,9 @@ for (const raw of readFileSync(new URL("../.env", import.meta.url), "utf8").spli
   if (!process.env[match[1]]) process.env[match[1]] = value;
 }
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+});
 const startOfToday = new Date();
 startOfToday.setHours(0, 0, 0, 0);
 

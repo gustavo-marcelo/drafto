@@ -21,7 +21,7 @@ test.describe("Usuários", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Usuários");
 
     const unique = Date.now();
-    const email = `e2e-user-${unique}@destrava.ai`;
+    const email = `e2e-user-${unique}@drafto.ai`;
 
     await page.getByLabel("Nome").fill("Usuário E2E");
     await page.getByLabel("E-mail").fill(email);
@@ -39,7 +39,7 @@ test.describe("Usuários", () => {
   test("rejeita e-mail duplicado", async ({ authedPage: page }) => {
     await page.goto("/dashboard/usuarios");
 
-    const email = `e2e-dup-${Date.now()}@destrava.ai`;
+    const email = `e2e-dup-${Date.now()}@drafto.ai`;
 
     await page.getByLabel("Nome").fill("Duplicado");
     await page.getByLabel("E-mail").fill(email);
@@ -58,7 +58,7 @@ test.describe("Usuários", () => {
   test("edita o nome e o telefone de um usuário existente", async ({ authedPage: page }) => {
     await page.goto("/dashboard/usuarios");
 
-    const email = `e2e-user-${Date.now()}@destrava.ai`;
+    const email = `e2e-user-${Date.now()}@drafto.ai`;
     await page.getByLabel("Nome").fill("Nome Original");
     await page.getByLabel("E-mail").fill(email);
     await page.getByLabel("Senha", { exact: true }).fill("senha-segura-123");

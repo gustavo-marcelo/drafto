@@ -1,15 +1,17 @@
 # Estado atual e pendências
 
-Atualizado em **23/10/2026**. Documento de handoff para continuar o trabalho em outra sessão do opencode.
+Atualizado em **22/11/2026**. Documento de handoff para continuar o trabalho em outra sessão do opencode.
 
 ## 1. Resumo
 
-- Branch: `main`.
+- Branch: `dev` (alinhada com `origin/dev`). `main` é a branch de produção; o fluxo está descrito no [README](../README.md#fluxo-de-branches-e-versão).
 - Últimos commits relevantes:
-  - `46891b2` — `feat: adiciona projetos com documentos e associação de propostas`
-  - `a44bb0a` — `feat: permite baixar documento do projeto em Markdown`
-- Há uma alteração **não commitada** em `src/components/layout/dashboard-shell.tsx`: a ordem do menu foi alterada para exibir **Projetos** antes de **Propostas**. Preservar ou commitar conforme a intenção.
-- Estado dos testes na última execução: **144 testes unitários (17 arquivos)**, **32 testes E2E**, `typecheck` e `lint` passando.
+  - `ef54627` — `refactor: migra para Prisma 7, renomeia marca para Drafto e adiciona bump de versão`
+  - `c54f0e7` — `style: reordena menu de projetos antes de propostas`
+  - `a5aaa82` — `docs: registra estado atual e pendências`
+- Árvore de trabalho limpa: a reordenação do menu em `src/components/layout/dashboard-shell.tsx` (Projetos antes de Propostas) foi commitada em `c54f0e7`.
+- Validação em 22/11/2026: **144 testes unitários (17 arquivos)**, `typecheck` e `lint` passando. Os **32 testes E2E** seguem como referência de 23/10 — não foram reexecutados após a migração para Prisma 7.
+- Stack atual: Next.js 16.4.6, React 19.3.1, Prisma 7.10.1 com `@prisma/adapter-pg` e cliente gerado em `src/generated/prisma` (pasta ignorada pelo Git).
 
 ## 2. O que foi entregue
 
@@ -79,8 +81,9 @@ Atualizado em **23/10/2026**. Documento de handoff para continuar o trabalho em 
 - **Não executar `npx prisma migrate dev` neste repositório.** Ele falha porque a migração `20261021153000_infrastructure_replaces_equipment` foi modificada após ser aplicada e pede reset do banco. **Não resetar.**
 - Para aplicar migrações manualmente:
   1. Criar a migração em `prisma/migrations/<timestamp>_<nome>/migration.sql`.
-  2. Rodar `npx prisma migrate deploy`.
-  3. Rodar `npx prisma generate`.
+  2. Rodar `npx prisma migrate deploy` (a URL vem de `DATABASE_URL`, via `prisma.config.ts`).
+  3. Rodar `npm run db:generate` (ou `npx prisma generate`).
+- Com Prisma 7, o `datasource` do `prisma/schema.prisma` não declara mais `url`; ele é definido em `prisma.config.ts` com `env("DATABASE_URL")`. O client é gerado em `src/generated/prisma` e consumido via `@/generated/prisma/client` — não mais em `node_modules/.prisma`.
 - As duas migrações de projetos já foram aplicadas no banco local.
 - `prisma migrate diff` pode sugerir `DROP DEFAULT` não relacionados em `Infrastructure.updatedAt`, `ProposalInfrastructure.updatedAt` e `ProposalValueItem.updatedAt`; não incluir essas alterações sem necessidade.
 
@@ -118,14 +121,17 @@ Observação: o E2E usa a porta `3200` e faz build + start. A limpeza automátic
 - Concluir itens de produção do plano: **6.3/6.6** — Docker standalone e deploy final com handoff.
 - Avaliar testes unitários adicionais para as Server Actions de projetos e para o componente de download.
 
-### Estado do working tree
+### Ambiente (22/11/2026)
 
-- `src/components/layout/dashboard-shell.tsx` está modificado (ordem do menu: Projetos antes de Propostas) e ainda não foi commitado.
+- Working tree limpo na branch `dev`; nada pendente de commit.
+- Revalidar `npm run test:e2e` após a migração para Prisma 7 antes de publicar (os 32 cenários foram executados pela última vez em 23/10).
 
 ## 7. Cuidados para a próxima sessão
 
 - Este projeto usa Next.js 16 com `cacheComponents` + React `Activity`. O estado dos formulários é preservado e páginas antigas podem permanecer no DOM. Em E2E, prefira `getByRole(...)` e escopos específicos em vez de `page.locator("table")`.
 - Consultar `node_modules/next/dist/docs/` antes de usar APIs do Next, conforme `AGENTS.md`.
+- O cliente Prisma 7 fica em `src/generated/prisma` (ignorado pelo Git). Após `npm ci`, confirme que `npm run db:generate` rodou; sem essa pasta o build falha ao resolver `@/generated/prisma/client`.
+- A cada merge na `main`, o workflow `.github/workflows/version-bump.yml` incrementa a versão patch e commita com `[skip ci]`; não edite `package.json`/`package-lock.json` manualmente apenas para versionar.
 - Em `src/services/project-document-pdf.ts`, `react-dom/server` precisa ser importado **dinamicamente**. Import estático quebra o build com Turbopack.
 - O PDF usa o cabeçalho da proposta apenas na primeira página; comportamento aceito até o momento.
 - Links no PDF são renderizados como texto simples via `MarkdownView` com `plainLinks`.

@@ -1,6 +1,6 @@
 # Deploy no Raspberry Pi (sem Docker)
 
-Guia passo a passo para rodar o Proposta.ai em um **Raspberry Pi 4 (64-bit)** com
+Guia passo a passo para rodar o Drafto em um **Raspberry Pi 4 (64-bit)** com
 o PostgreSQL instalado no próprio sistema, na rede local.
 
 - **Sem Docker**, sem proxy reverso e sem HTTPS — o mais simples possível.
@@ -98,8 +98,8 @@ Guarde o caminho retornado (vamos usá-lo no passo 6).
 
 ```bash
 cd ~
-git clone <URL-DO-REPOSITORIO> destrava.ai
-cd destrava.ai
+git clone <URL-DO-REPOSITORIO> drafto
+cd drafto
 ```
 
 > Se o repositório for privado, use um token de acesso ou copie a pasta via
@@ -131,7 +131,7 @@ Ajuste pelo menos estas linhas:
 ```bash
 DATABASE_URL="postgresql://proposta:proposta@localhost:5432/propostadb?schema=public"
 SESSION_SECRET="<cole aqui a saída de: openssl rand -base64 32>"
-ADMIN_EMAIL="admin@destrava.ai"
+ADMIN_EMAIL="admin@drafto.ai"
 ADMIN_PASSWORD="<uma senha forte>"
 ADMIN_NAME="Administrador"
 
@@ -159,12 +159,14 @@ openssl rand -base64 32
 # carrega o .env nas variáveis de shell
 set -a; source .env; set +a
 
-npx prisma generate
+npx prisma generate         # gera o client em src/generated/prisma
 npx prisma migrate deploy   # aplica as migrações
 npm run db:seed             # cria o usuário inicial + dados de exemplo
 ```
 
-O seed imprime o usuário criado (ex.: `admin@destrava.ai`).
+O seed imprime o usuário criado (ex.: `admin@drafto.ai`). O `postinstall` do
+`npm ci` já executa o `prisma generate`; o comando explícito acima garante que o
+cliente Prisma 7 esteja atualizado antes do build.
 
 ---
 
@@ -216,22 +218,23 @@ pm2 restart proposta    # reiniciar após atualizar o código
 ## 10. Atualizações futuras
 
 ```bash
-cd ~/destrava.ai
+cd ~/drafto
 git pull
 
 # Não baixa o Chromium de novo (o do sistema é usado)
 export PUPPETEER_SKIP_DOWNLOAD=true
 
 npm ci
-npx prisma generate      # regera o cliente Prisma (npm ci apaga node_modules/.prisma)
+npx prisma generate      # regera o cliente Prisma 7 em src/generated/prisma
 npx prisma migrate deploy
 npm run build
 pm2 restart proposta
 ```
 
-> O `npx prisma generate` é **obrigatório** depois do `npm ci`: ele recria o
-> cliente Prisma em `node_modules/.prisma`, sem o qual o build falha com
-> `Cannot find module '.prisma/client/default'`.
+> Com Prisma 7, o cliente é gerado em `src/generated/prisma` (pasta ignorada pelo
+> Git) e consumido via `@/generated/prisma/client`. O `postinstall` do `npm ci`
+> já roda o `prisma generate`; execute o comando explicitamente se o build
+> reclamar de `Cannot find module '@/generated/prisma/client'`.
 
 ### Conferir qual versão está no ar
 
@@ -273,9 +276,9 @@ O cookie de sessão está marcado como `Secure` e o acesso é por HTTP. Defina
 `COOKIE_SECURE="false"` no `.env` e reinicie (`pm2 restart proposta`). Isso é
 seguro para a rede local; ao usar HTTPS (com proxy/domínio), remova essa linha.
 
-**Build falha com `Cannot find module '.prisma/client/default'`**
-O `npm ci` remove a pasta `node_modules/.prisma` (cliente Prisma gerado).
-Regere antes do build:
+**Build falha com `Cannot find module '@/generated/prisma/client'`**
+A pasta `src/generated/prisma` (cliente Prisma 7 gerado) está ausente ou
+desatualizada. Regere antes do build:
 
 ```bash
 npx prisma generate
@@ -311,7 +314,7 @@ Troque a porta: `PORT=3001 npm run start` (e ajuste no PM2, se usar).
 ```bash
 # 1x
 sudo apt-get install -y nodejs postgresql chromium-browser
-git clone <repo> ~/destrava.ai && cd ~/destrava.ai
+git clone <repo> ~/drafto && cd ~/drafto
 PUPPETEER_SKIP_DOWNLOAD=true npm ci
 cp .env.example .env    # edite: DATABASE_URL, SESSION_SECRET, ADMIN_*, PUPPETEER_EXECUTABLE_PATH
 set -a; source .env; set +a

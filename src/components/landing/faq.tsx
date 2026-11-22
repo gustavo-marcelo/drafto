@@ -22,7 +22,7 @@ const FAQ = [
   {
     question: "Os dados das propostas ficam na nuvem?",
     answer:
-      "Não. O Proposta.ai roda onde você quiser — inclusive no seu próprio servidor ou em um Raspberry Pi na rede local — com o seu banco de dados.",
+      "Não. O Drafto roda onde você quiser — inclusive no seu próprio servidor ou em um Raspberry Pi na rede local — com o seu banco de dados.",
   },
 ];
 

@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/generated/prisma/enums";
 
 export const PROPOSAL_STATUSES: ProposalStatus[] = [
   "DRAFT",

@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { canTransition, STATUS_LABELS } from "@/lib/proposal-status";
 import { proposalStatusEnum } from "@/lib/validations/proposal";
 import { generateUniqueCode } from "@/services/codes";
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/generated/prisma/enums";
 
 export async function updateProposalStatus(
   id: string,

@@ -16,9 +16,7 @@ export function LandingFooter() {
         <div className="max-w-sm">
           <div className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="" width={32} height={32} preload className="h-8 w-8" />
-            <span className="text-primary-900 text-base font-semibold tracking-tight">
-              Proposta.ai
-            </span>
+            <span className="text-primary-900 text-base font-semibold tracking-tight">Drafto</span>
           </div>
           <p className="text-primary-700 mt-4 text-sm leading-relaxed">
             Gerador de propostas comerciais para empresas de credenciamento e gestão de eventos.
