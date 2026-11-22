@@ -17,7 +17,7 @@ export const logger: Logger = pino({
   level: resolveLevel(),
   base: {
     env: process.env.NODE_ENV,
-    service: "proposta.ai",
+    service: "drafto",
   },
   redact: {
     paths: [

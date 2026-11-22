@@ -171,7 +171,7 @@ export function SettingsForm({ initial }: SettingsFormProps) {
                 type="text"
                 value={data.companyName}
                 onChange={(e) => update("companyName", e.target.value)}
-                placeholder="Ex: Destrava Tecnologia Ltda"
+                placeholder="Ex: Drafto Tecnologia Ltda"
                 className={inputClass}
               />
             </Field>

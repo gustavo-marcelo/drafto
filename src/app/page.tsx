@@ -11,7 +11,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 
 export const metadata: Metadata = {
-  title: "Proposta.ai — Propostas comerciais prontas para enviar",
+  title: "Drafto — Propostas comerciais prontas para enviar",
   description:
     "Monte propostas comerciais profissionais para eventos em minutos: assistente em 4 etapas, pré-visualização em tempo real, PDF A4 paginado automaticamente, composição de valores e link público para o cliente.",
   keywords: [
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     "PDF de proposta",
   ],
   openGraph: {
-    title: "Proposta.ai — Propostas comerciais prontas para enviar",
+    title: "Drafto — Propostas comerciais prontas para enviar",
     description:
       "Assistente em 4 etapas, pré-visualização em tempo real, PDF A4 paginado e link público para o cliente.",
     type: "website",

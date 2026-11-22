@@ -1,6 +1,6 @@
 import { test as base, expect, type Page } from "@playwright/test";
 
-export const DEMO_EMAIL = "demo@destrava.ai";
+export const DEMO_EMAIL = "demo@drafto.ai";
 export const DEMO_PASSWORD = "proposta123";
 export const SEED_PROPOSAL_CODE = "PR0001.0001";
 export const SEED_SHARE_ID = "demo1234abcd5678";

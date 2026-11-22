@@ -15,7 +15,7 @@ export type Settings = {
 
 const DEFAULT_SETTINGS: Settings = {
   logo: null,
-  companyName: "Proposta.ai",
+  companyName: "Drafto",
   tagline: "Credenciamento e Gestão de Eventos",
   responsible: "",
   responsibleRole: "",

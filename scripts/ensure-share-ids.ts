@@ -1,6 +1,9 @@
-import { readFileSync } from "node:fs";
 import { randomInt } from "node:crypto";
-import { PrismaClient } from "@prisma/client";
+import { readFileSync } from "node:fs";
+
+import { PrismaPg } from "@prisma/adapter-pg";
+
+import { PrismaClient } from "../src/generated/prisma/client";
 
 for (const raw of readFileSync(new URL("../.env", import.meta.url), "utf8").split("\n")) {
   const line = raw.trim();
@@ -27,7 +30,9 @@ function generateShareId(length = 16) {
   return id;
 }
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+});
 
 const proposals = await prisma.proposal.findMany({
   where: { shareId: null },

@@ -105,7 +105,7 @@ export function Hero() {
           </h1>
 
           <p className="text-primary-700 mt-5 text-lg leading-relaxed text-pretty">
-            O Proposta.ai monta o documento da proposta do seu evento — recursos, infraestrutura,
+            O Drafto monta o documento da proposta do seu evento — recursos, infraestrutura,
             cronograma, valores e aceite — com a identidade da sua empresa. Você preenche um
             assistente passo a passo e o sistema cuida do PDF profissional.
           </p>

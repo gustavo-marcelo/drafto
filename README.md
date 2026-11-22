@@ -1,4 +1,4 @@
-# Proposta.ai
+# Drafto
 
 Gerador de propostas comerciais — criação, edição, gestão e exportação (PDF) de propostas para credenciamento e gestão de eventos. Inclui gestão de projetos por cliente com documentos anexados em Markdown.
 
@@ -26,7 +26,7 @@ npm run dev
 ```
 
 Acesse [http://localhost:3000](http://localhost:3000). O usuário inicial padrão é
-`demo@destrava.ai` / `proposta123` (configurável via `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
+`demo@drafto.ai` / `proposta123` (configurável via `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
 
 ## Docker (app + banco)
 
@@ -117,3 +117,20 @@ feat: adiciona criação de proposta
 fix: corrige cálculo do valor total
 docs: atualiza plano de desenvolvimento
 ```
+
+## Fluxo de branches e versão
+
+- `dev` — branch de desenvolvimento: todo trabalho novo começa nela.
+- `main` — branch de produção: recebe merges via PR a partir de `dev`.
+
+```bash
+git switch dev
+git pull origin dev
+git switch -c feature/minha-mudanca
+# commits → PR para dev → PR para main
+```
+
+A cada merge na `main`, o workflow
+[`.github/workflows/version-bump.yml`](./.github/workflows/version-bump.yml)
+incrementa a versão patch em `package.json` e `package-lock.json` (ex.: `0.1.0` →
+`0.1.1`) e commita a alteração com `[skip ci]` para não disparar a CI novamente.

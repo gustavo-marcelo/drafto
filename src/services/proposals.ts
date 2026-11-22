@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma, ProposalStatus } from "@prisma/client";
+import type { Prisma, ProposalStatus } from "@/generated/prisma/client";
 
 import { formatAddress } from "@/lib/format";
 import { prisma } from "@/lib/prisma";

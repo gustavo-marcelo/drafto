@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { updateProposalStatus } from "@/app/actions/proposals";
 import { allowedStatuses, STATUS_LABELS, STATUS_STYLES } from "@/lib/proposal-status";
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/generated/prisma/enums";
 
 export function ProposalStatusControl({
   proposalId,

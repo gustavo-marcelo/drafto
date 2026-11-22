@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Proposta.ai",
+  title: "Drafto",
   description: "Gerador de propostas comerciais",
 };
 

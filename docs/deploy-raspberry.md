@@ -1,6 +1,6 @@
 # Deploy no Raspberry Pi (sem Docker)
 
-Guia passo a passo para rodar o Proposta.ai em um **Raspberry Pi 4 (64-bit)** com
+Guia passo a passo para rodar o Drafto em um **Raspberry Pi 4 (64-bit)** com
 o PostgreSQL instalado no próprio sistema, na rede local.
 
 - **Sem Docker**, sem proxy reverso e sem HTTPS — o mais simples possível.
@@ -98,8 +98,8 @@ Guarde o caminho retornado (vamos usá-lo no passo 6).
 
 ```bash
 cd ~
-git clone <URL-DO-REPOSITORIO> destrava.ai
-cd destrava.ai
+git clone <URL-DO-REPOSITORIO> drafto
+cd drafto
 ```
 
 > Se o repositório for privado, use um token de acesso ou copie a pasta via
@@ -131,7 +131,7 @@ Ajuste pelo menos estas linhas:
 ```bash
 DATABASE_URL="postgresql://proposta:proposta@localhost:5432/propostadb?schema=public"
 SESSION_SECRET="<cole aqui a saída de: openssl rand -base64 32>"
-ADMIN_EMAIL="admin@destrava.ai"
+ADMIN_EMAIL="admin@drafto.ai"
 ADMIN_PASSWORD="<uma senha forte>"
 ADMIN_NAME="Administrador"
 
@@ -164,7 +164,7 @@ npx prisma migrate deploy   # aplica as migrações
 npm run db:seed             # cria o usuário inicial + dados de exemplo
 ```
 
-O seed imprime o usuário criado (ex.: `admin@destrava.ai`).
+O seed imprime o usuário criado (ex.: `admin@drafto.ai`).
 
 ---
 
@@ -216,7 +216,7 @@ pm2 restart proposta    # reiniciar após atualizar o código
 ## 10. Atualizações futuras
 
 ```bash
-cd ~/destrava.ai
+cd ~/drafto
 git pull
 
 # Não baixa o Chromium de novo (o do sistema é usado)
@@ -311,7 +311,7 @@ Troque a porta: `PORT=3001 npm run start` (e ajuste no PM2, se usar).
 ```bash
 # 1x
 sudo apt-get install -y nodejs postgresql chromium-browser
-git clone <repo> ~/destrava.ai && cd ~/destrava.ai
+git clone <repo> ~/drafto && cd ~/drafto
 PUPPETEER_SKIP_DOWNLOAD=true npm ci
 cp .env.example .env    # edite: DATABASE_URL, SESSION_SECRET, ADMIN_*, PUPPETEER_EXECUTABLE_PATH
 set -a; source .env; set +a

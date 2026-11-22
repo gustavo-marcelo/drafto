@@ -78,7 +78,7 @@ export function DashboardShell({
               className="text-primary-900 flex items-center gap-2 font-semibold"
             >
               <Image src="/logo.png" alt="" width={28} height={28} preload className="h-7 w-7" />
-              <span className="text-base">Proposta.ai</span>
+              <span className="text-base">Drafto</span>
             </Link>
             <button
               type="button"

@@ -1,6 +1,6 @@
 # Deploy e Observabilidade
 
-Guia de configuração de produção do Proposta.ai: variáveis de ambiente, segredos,
+Guia de configuração de produção do Drafto: variáveis de ambiente, segredos,
 logs estruturados e monitoramento de erros.
 
 ## 1. Variáveis de ambiente
@@ -27,7 +27,7 @@ fazem a aplicação falhar **cedo**, no primeiro acesso a `getEnv()`.
 | `NEXT_PUBLIC_SENTRY_ENVIRONMENT`        | Ambiente do Sentry no cliente.                               | `NODE_ENV`                    |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | Amostragem de tracing no cliente (0..1).                     | `0`                           |
 | `LOG_LEVEL`                             | Nível do logger pino: `fatal`…`trace`/`silent`.              | `debug` (dev) / `info` (prod) |
-| `ADMIN_EMAIL`                           | E-mail do usuário inicial criado pelo seed.                  | `demo@destrava.ai`            |
+| `ADMIN_EMAIL`                           | E-mail do usuário inicial criado pelo seed.                  | `demo@drafto.ai`              |
 | `ADMIN_PASSWORD`                        | Senha do usuário inicial (mín. 8 caracteres).                | `proposta123`                 |
 | `ADMIN_NAME`                            | Nome do usuário inicial.                                     | `Usuário Demo`                |
 
@@ -114,7 +114,7 @@ O servidor usa [pino](https://getpino.io) em `src/lib/logger.ts`:
 
 - **Produção:** JSON de uma linha por evento (pronto para agregadores).
 - **Desenvolvimento:** `pino-pretty` (colorido e legível).
-- Campos base: `env`, `service: "proposta.ai"`.
+- Campos base: `env`, `service: "drafto"`.
 - **Redaction:** `password`, `authorization` e `cookie` são removidos automaticamente.
 
 Uso:

@@ -1,4 +1,4 @@
-# 📐 Especificação do Sistema: Gerador de Propostas Comerciais (Proposta.ai / Espalha.ai)
+# 📐 Especificação do Sistema: Gerador de Propostas Comerciais (Drafto / Espalha.ai)
 
 ## 1. Visão Geral do Projeto
 

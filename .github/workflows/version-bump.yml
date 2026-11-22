@@ -1,0 +1,36 @@
+name: Version bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Incrementa versão patch
+        run: npm version patch --no-git-tag-version --ignore-scripts
+
+      - name: Commita e envia a nova versão
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração de versão para commitar."
+            exit 0
+          fi
+          git commit -m "chore: incrementa versão para $(node -p "require('./package.json').version") [skip ci]"
+          git push origin HEAD:main

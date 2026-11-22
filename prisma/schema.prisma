@@ -1,15 +1,14 @@
-// Proposta.ai — Modelo de dados (Prisma)
-// Mantido em um único arquivo por decisão: o Prisma 6 não suporta schema
-// multiarquivo. Seções organizadas por domínio; ordem dos models não afeta
-// as relações (todas são nomeadas pelos campos).
+// Drafto — Modelo de dados (Prisma)
+// Mantido em um único arquivo por decisão. Seções organizadas por domínio;
+// ordem dos models não afeta as relações (todas são nomeadas pelos campos).
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ────────────────────────────────────────────────────────────
