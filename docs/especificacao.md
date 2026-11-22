@@ -119,7 +119,7 @@ A proposta é dividida em **5 blocos principais**:
 
 - **Editor / Visualização Dividida (Split Screen)**: Conforme o usuário preenche os campos à esquerda, o documento à direita é atualizado em tempo real.
 - **Gerador de PDF (PDF Export)**:
-- Preservar o design de 3 páginas do modelo original (Página 1: Apresentação e Recursos; Página 2: Requisitos de Preparação; Página 3: Valores, Aceite e Condições).
+- Preservar a identidade visual do modelo original (apresentação e recursos, requisitos de preparação, valores/aceite e condições) com paginação A4 dinâmica; a página de valores sempre começa em uma nova página. Na implementação atual, o template HTML/CSS compartilhado alimenta preview, link público e PDF.
 
 - Cabeçalho/Rodapé padronizados com logo da empresa e numeração de página.
 

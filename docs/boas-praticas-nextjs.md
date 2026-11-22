@@ -27,6 +27,7 @@ Guia de boas práticas para estruturar, desenvolver e manter a aplicação Next.
   └── styles/             # globals, tokens de design
   ```
 
+- Neste repositório a estrutura fica sob `src/` (por exemplo, `src/app/`, `src/components/`).
 - Usar **grupos de rotas** `(...)` para layouts distintos sem afetar a URL.
 - Manter nomes de arquivos consistentes (`PascalCase` para componentes, `kebab-case` para demais).
 
@@ -90,11 +91,11 @@ Guia de boas práticas para estruturar, desenvolver e manter a aplicação Next.
 
 - Nunca expor segredos com prefixo `NEXT_PUBLIC_` que não devem ser públicos.
 - Validar TODA entrada de dados no servidor (formularios, webhooks, params).
-- Proteger rotas autenticadas no **middleware** e revalidar no servidor:
+- Proteger rotas autenticadas no **proxy** (no Next 16, o antigo `middleware.ts` virou `proxy.ts`) e revalidar no servidor:
 
   ```ts
-  // middleware.ts
-  export function middleware(req: NextRequest) {
+  // src/proxy.ts
+  export default async function proxy(req: NextRequest) {
     /* checa sessão */
   }
   ```

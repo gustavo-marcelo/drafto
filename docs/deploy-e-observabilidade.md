@@ -18,18 +18,19 @@ fazem a aplicação falhar **cedo**, no primeiro acesso a `getEnv()`.
 
 ### Opcionais
 
-| Variável                                | Descrição                                                    | Padrão                        |
-| --------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
-| `SENTRY_DSN`                            | DSN do Sentry (server). Sem valor, o Sentry fica desativado. | —                             |
-| `SENTRY_ENVIRONMENT`                    | Ambiente reportado ao Sentry.                                | `NODE_ENV`                    |
-| `SENTRY_TRACES_SAMPLE_RATE`             | Amostragem de tracing (0..1).                                | `0`                           |
-| `NEXT_PUBLIC_SENTRY_DSN`                | DSN do Sentry exposto ao navegador.                          | —                             |
-| `NEXT_PUBLIC_SENTRY_ENVIRONMENT`        | Ambiente do Sentry no cliente.                               | `NODE_ENV`                    |
-| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | Amostragem de tracing no cliente (0..1).                     | `0`                           |
-| `LOG_LEVEL`                             | Nível do logger pino: `fatal`…`trace`/`silent`.              | `debug` (dev) / `info` (prod) |
-| `ADMIN_EMAIL`                           | E-mail do usuário inicial criado pelo seed.                  | `demo@drafto.ai`              |
-| `ADMIN_PASSWORD`                        | Senha do usuário inicial (mín. 8 caracteres).                | `proposta123`                 |
-| `ADMIN_NAME`                            | Nome do usuário inicial.                                     | `Usuário Demo`                |
+| Variável                                | Descrição                                                    | Padrão                          |
+| --------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
+| `SENTRY_DSN`                            | DSN do Sentry (server). Sem valor, o Sentry fica desativado. | —                               |
+| `SENTRY_ENVIRONMENT`                    | Ambiente reportado ao Sentry.                                | `NODE_ENV`                      |
+| `SENTRY_TRACES_SAMPLE_RATE`             | Amostragem de tracing (0..1).                                | `0`                             |
+| `NEXT_PUBLIC_SENTRY_DSN`                | DSN do Sentry exposto ao navegador.                          | —                               |
+| `NEXT_PUBLIC_SENTRY_ENVIRONMENT`        | Ambiente do Sentry no cliente.                               | `NODE_ENV`                      |
+| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | Amostragem de tracing no cliente (0..1).                     | `0`                             |
+| `LOG_LEVEL`                             | Nível do logger pino: `fatal`…`trace`/`silent`.              | `debug` (dev) / `info` (prod)   |
+| `COOKIE_SECURE`                         | Marca o cookie de sessão como `Secure` (somente HTTPS).      | `true` em prod / `false` em dev |
+| `ADMIN_EMAIL`                           | E-mail do usuário inicial criado pelo seed.                  | `demo@drafto.ai`                |
+| `ADMIN_PASSWORD`                        | Senha do usuário inicial (mín. 8 caracteres).                | `proposta123`                   |
+| `ADMIN_NAME`                            | Nome do usuário inicial.                                     | `Usuário Demo`                  |
 
 > **Segurança:** nunca comite o `.env` real (já ignorado no `.gitignore`). Em
 > produção, injete os segredos pelo provedor (Docker secrets, Vercel env, etc.).
@@ -46,11 +47,17 @@ openssl rand -base64 32   # SESSION_SECRET
 
 ```bash
 npx prisma migrate deploy   # aplica migrations pendentes (produção)
-npx prisma generate         # gera o client
+npx prisma generate         # gera o client em src/generated/prisma
 npm run db:seed             # usuário inicial + catálogo + proposta demo
 npm run db:expire           # expira propostas vencidas (agendar via cron)
 npm run db:share-ids        # gera link público para propostas que ainda não têm shareId
 ```
+
+Com Prisma 7, a URL do banco saiu do `datasource` do schema e passou para
+`prisma.config.ts` (`env("DATABASE_URL")`). O cliente usa o driver adapter
+`@prisma/adapter-pg` e é gravado em `src/generated/prisma`, ignorado pelo Git —
+o `postinstall` (`prisma generate`) já cuida disso após `npm ci`. Sem essa pasta,
+o build falha ao resolver `@/generated/prisma/client`.
 
 ## 3. Docker (app + banco)
 
@@ -168,3 +175,15 @@ curl -sI http://localhost:3000/            # 200
 curl -sI http://localhost:3000/dashboard   # 307 → /login (sem sessão)
 curl -s  http://localhost:3000/nao-existe  # página 404 personalizada
 ```
+
+## 7. Versionamento automático
+
+O fluxo de branches está descrito no [README](../README.md#fluxo-de-branches-e-versão):
+trabalho em `dev`, PR para `main`. A cada merge/push na `main`, o workflow
+`.github/workflows/version-bump.yml` executa `npm version patch --no-git-tag-version
+--ignore-scripts`, comita `package.json` e `package-lock.json` com mensagem
+`chore: incrementa versão ... [skip ci]` e faz o push de volta para `main`.
+
+- O sufixo `[skip ci]` evita disparar o CI novamente para o commit de versão.
+- O job ignora pushes feitos pelo próprio `github-actions[bot]` (guarda contra loop).
+- A versão em execução pode ser conferida por `GET /api/version` e na tela de login.

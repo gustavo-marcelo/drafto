@@ -8,7 +8,7 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 **Cronograma estimado:** 8 a 10 semanas (1 dev full-stack).
 
-**Status atual (20/10/2026):** Fases 0–5 concluídas. Fase 6 em andamento — 6.1 (Vitest), 6.2 (Playwright), 6.4 (segredos) e 6.5 (observabilidade) concluídas.
+**Status atual (22/11/2026):** Fases 0–5 concluídas. Fase 6 em andamento — 6.1 (Vitest), 6.2 (Playwright), 6.4 (segredos) e 6.5 (observabilidade) concluídas; 6.3 (Docker standalone) e 6.6 (deploy final) pendentes. Em 22/11 o projeto passou a usar Next.js 16.4.6, React 19.3.1 e Prisma 7.10.1 (client gerado em `src/generated/prisma`), além de adotar o nome **Drafto**.
 
 ---
 
@@ -29,9 +29,9 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 
 **Notas de implementação:**
 
-- Stack efetiva: Next.js 16.4.2, React 19, Tailwind v4 (tokens via `@theme`), Prisma 6.19.3.
+- Stack efetiva (22/11/2026): Next.js 16.4.6, React 19.3.1, Tailwind v4.3.5 (tokens via `@theme`), Prisma 7.10.1, TypeScript 6 e Vitest 5.
 - Banco local: `postgresql://proposta@localhost:5432/propostadb`.
-- Prisma 8 (RC) foi descartado por ser release candidate; fixado em 6.x (API estável).
+- Prisma 8 (RC) continua descartado por ser release candidate. O projeto usou Prisma 6.x até 22/10 e migrou para o 7.10.1 (stable) em 22/11: generator `prisma-client` com saída `src/generated/prisma`, driver adapter `@prisma/adapter-pg`, URL em `prisma.config.ts` (via `env("DATABASE_URL")`) e scripts cron em `.ts` executados com `tsx`.
 - CI roda sobre Postgres 16 em container e executa `migrate deploy` + lint + typecheck + build.
 - **Reorganização (20/10):** banco recriado do zero com migração única `20261020192559_init` (13 migrações incrementais esmagadas), `prisma/schema.prisma` reescrito em seções comentadas (semântica idêntica — validada com `migrate diff`) e configuração migrada de `package.json#prisma` para `prisma.config.ts` (+ `dotenv` como devDependency).
 
@@ -170,6 +170,7 @@ Plano de execução em etapas para construir a aplicação web de criação, ges
 - **CI:** job `quality` agora roda `npm run test`; novo job `e2e` sobe Postgres, aplica `migrate deploy` + `db:seed`, instala Chromium (`playwright install --with-deps`) e roda `npm run test:e2e`, publicando o `playwright-report` como artefato.
 - **6.4 ✅:** validação de env com Zod em `src/lib/env.ts` (`getEnv()`, cacheado, falha cedo com mensagens por variável); `SESSION_SECRET` exige ≥32 caracteres; `types/env.d.ts` ampliado (`SENTRY_*`, `LOG_LEVEL`, `CI`, `E2E_PORT`). `.env.example` reescrito e comentado (obrigatórias × opcionais + como gerar segredos). Guia completo em `docs/deploy-e-observabilidade.md`. +2 arquivos de teste (`env.test.ts`, `monitoring.test.ts`).
 - **6.5 ✅:** logger estruturado `pino` (`src/lib/logger.ts`) com redaction de segredos e `pino-pretty` em dev; integrado em `services/proposal-pdf.ts`, `actions/proposals.ts`, `actions/clients.ts` e no `onRequestError` global (`src/instrumentation.ts`). Sentry **opcional via DSN** (`@sentry/nextjs` v11): `instrumentation.ts` (server node/edge) + `instrumentation-client.ts` (browser + breadcrumbs de navegação), `captureServerError` (`lib/observability.ts`) e `reportClientError` (`lib/report-client-error.ts`). Error boundaries novos: `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` (e `dashboard/error.tsx` instrumentado) — todos no-op sem DSN.
+- **22/11 (fora das etapas acima):** rebrand de `Proposta.ai`/`destrava.ai` para **Drafto** (nome do pacote, metadados, textos da landing, e-mails do seed e `service` dos logs) e workflow `.github/workflows/version-bump.yml`, que incrementa a versão patch em `package.json`/`package-lock.json` a cada merge na `main` e commita com `[skip ci]`. Ver [README](../README.md#fluxo-de-branches-e-versão).
 
 ---
 
@@ -237,3 +238,4 @@ Sem 10 ████ Fase 6 — Testes e Deploy     🟡
 1. **Reduzir repetição de `verifySession`** — `src/proxy.ts` já protege rotas; avaliar centralizar as checagens por camada nas páginas/actions.
 2. **Escapar Zod do bundle client** — schemas usados só no server reduziriam ~30 KB gzip da primeira carga.
 3. **Configurar produção (6.3/6.6)** — Docker standalone e deploy final com handoff.
+4. **Revalidar E2E após o upgrade** — os 32 cenários Playwright foram executados pela última vez em 23/10, antes da migração para Prisma 7.

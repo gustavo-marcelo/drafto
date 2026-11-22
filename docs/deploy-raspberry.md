@@ -159,12 +159,14 @@ openssl rand -base64 32
 # carrega o .env nas variáveis de shell
 set -a; source .env; set +a
 
-npx prisma generate
+npx prisma generate         # gera o client em src/generated/prisma
 npx prisma migrate deploy   # aplica as migrações
 npm run db:seed             # cria o usuário inicial + dados de exemplo
 ```
 
-O seed imprime o usuário criado (ex.: `admin@drafto.ai`).
+O seed imprime o usuário criado (ex.: `admin@drafto.ai`). O `postinstall` do
+`npm ci` já executa o `prisma generate`; o comando explícito acima garante que o
+cliente Prisma 7 esteja atualizado antes do build.
 
 ---
 
@@ -223,15 +225,16 @@ git pull
 export PUPPETEER_SKIP_DOWNLOAD=true
 
 npm ci
-npx prisma generate      # regera o cliente Prisma (npm ci apaga node_modules/.prisma)
+npx prisma generate      # regera o cliente Prisma 7 em src/generated/prisma
 npx prisma migrate deploy
 npm run build
 pm2 restart proposta
 ```
 
-> O `npx prisma generate` é **obrigatório** depois do `npm ci`: ele recria o
-> cliente Prisma em `node_modules/.prisma`, sem o qual o build falha com
-> `Cannot find module '.prisma/client/default'`.
+> Com Prisma 7, o cliente é gerado em `src/generated/prisma` (pasta ignorada pelo
+> Git) e consumido via `@/generated/prisma/client`. O `postinstall` do `npm ci`
+> já roda o `prisma generate`; execute o comando explicitamente se o build
+> reclamar de `Cannot find module '@/generated/prisma/client'`.
 
 ### Conferir qual versão está no ar
 
@@ -273,9 +276,9 @@ O cookie de sessão está marcado como `Secure` e o acesso é por HTTP. Defina
 `COOKIE_SECURE="false"` no `.env` e reinicie (`pm2 restart proposta`). Isso é
 seguro para a rede local; ao usar HTTPS (com proxy/domínio), remova essa linha.
 
-**Build falha com `Cannot find module '.prisma/client/default'`**
-O `npm ci` remove a pasta `node_modules/.prisma` (cliente Prisma gerado).
-Regere antes do build:
+**Build falha com `Cannot find module '@/generated/prisma/client'`**
+A pasta `src/generated/prisma` (cliente Prisma 7 gerado) está ausente ou
+desatualizada. Regere antes do build:
 
 ```bash
 npx prisma generate
