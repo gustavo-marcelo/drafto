@@ -59,6 +59,9 @@ Com Prisma 7, a URL do banco saiu do `datasource` do schema e passou para
 o `postinstall` (`prisma generate`) já cuida disso após `npm ci`. Sem essa pasta,
 o build falha ao resolver `@/generated/prisma/client`.
 
+Para rotinas de backup e restauração (com ou sem Docker), veja
+[backup.md](./backup.md).
+
 ## 3. Docker (app + banco)
 
 O projeto sobe completo (aplicação + PostgreSQL) com Docker Compose. O build usa

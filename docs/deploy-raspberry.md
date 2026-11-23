@@ -6,6 +6,7 @@ o PostgreSQL instalado no próprio sistema, na rede local.
 - **Sem Docker**, sem proxy reverso e sem HTTPS — o mais simples possível.
 - Acesso pela rede local: `http://<ip-do-pi>:3000`.
 - A geração de PDF usa o **Chromium do sistema** (economiza RAM e espaço no Pi).
+- Backup/restore do banco: veja [backup.md](./backup.md) (seção "Sem Docker").
 
 > Tempo estimado: 20–30 minutos. Faça tudo pelo terminal (SSH) do Raspberry.
 
